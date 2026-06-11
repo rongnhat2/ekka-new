@@ -1,12 +1,10 @@
 @extends('admin.layout')
 
-
-
 @section('body')
 
 <div class="page-content">
     <div class="container-fluid">
-        <div class="row">
+        <div id="category-list" class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
@@ -16,28 +14,44 @@
                             </div>
                             <div class="col-sm-12 col-md-6">
                                 <div class="align-justify-center">
-                                    <a href="#" class="btn btn-default btn-sm flex-right modal-control" data-toggle="modal" atr="Create">Danh mục<i class="fas fa-plus m-l-5"></i></a>
+                                    <a href="#" class="btn btn-default btn-sm flex-right" data-action="show-create-form" data-module="category">Danh mục<i class="fas fa-plus m-l-5"></i></a>
                                 </div>
                             </div>
                         </div>
-                        <table class="table dt-responsive nowrap">
+
+                        <table class="table dt-responsive nowrap" id="data-table">
                             <thead>
                                 <tr>
+                                    <th width="10%">ID</th>
                                     <th>Tên danh mục</th>
-                                    <th>Slug</th>
-                                    <th>Hành động</th>
+                                    <th width="15%">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($categories as $category) : ?>
-                                    <tr>
-                                        <td><?php echo $category->name; ?></td>
-                                        <td><?php echo $category->slug; ?></td>
-                                        <td><a href="#" class="btn btn-default btn-sm">Sửa</a> <a href="#" class="btn btn-default btn-sm">Xóa</a></td>
-                                    </tr>
-                                <?php endforeach; ?>
+                                @forelse ($categories as $category)
+                                <tr>
+                                    <td>{{ $category->id }}</td>
+                                    <td>{{ $category->name }}</td>
+                                    <td>
+                                        <a href="#" class="btn btn-default btn-sm"
+                                            data-action="show-edit-form"
+                                            data-module="category"
+                                            data-id="{{ $category->id }}"
+                                            data-name="{{ $category->name }}"><i class="feather-edit"></i></a>
+                                        <form action="{{ route('admin.category.delete', $category->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa danh mục này?')">
+                                            @csrf
+                                            <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="3" class="text-center">Không có dữ liệu</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
+
                     </div>
                 </div>
             </div>
@@ -45,28 +59,50 @@
     </div>
 </div>
 
-
-<form class="row" action="/admin/category/store" method="post">
-    @csrf
-    <div class="col-6 offset-3">
-        <div class="card">
-            <div class="card-body">
-                <div class="error-log"></div>
-                <div class="form-group">
-                    <label for="name">Tên danh mục</label>
-                    <input type="text" class="form-control" name="name" id="name" placeholder="Tên danh mục">
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-default close-modal m-r-10">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Tạo mới</button>
+<div id="category-create-form" class="d-none">
+    <form class="row" action="{{ route('admin.category.store') }}" method="post">
+        @csrf
+        <div class="col-6 offset-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="category-create-name">Tên danh mục</label>
+                        <input type="text" class="form-control" name="name" id="category-create-name" placeholder="Tên danh mục">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-default m-r-10" data-action="hide-form" data-module="category">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Tạo mới</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
+</div>
+
+<div id="category-edit-form" class="d-none">
+    <form class="row" action="{{ route('admin.category.update') }}" method="post">
+        @csrf
+        <input type="hidden" name="id">
+        <div class="col-6 offset-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="category-edit-name">Tên danh mục</label>
+                        <input type="text" class="form-control" name="name" id="category-edit-name" placeholder="Tên danh mục">
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-default m-r-10" data-action="hide-form" data-module="category">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Cập nhật</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 
 @endsection
 
 @section('js')
-
+<script src="{{ asset('manager/assets/js/page/admin-list-form.js') }}"></script>
+<script src="{{ asset('manager/assets/js/page/admin-table-filter.js') }}"></script>
 @endsection

@@ -3,44 +3,47 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\SlugTrait;
+use App\Http\Controllers\Admin\Traits\BuildsPaginatedListing;
 use Illuminate\Http\Request;
 use DB;
 
 class CategoryController extends Controller
 {
-    public function index()
+    use SlugTrait, BuildsPaginatedListing;
+
+    public function index(Request $request)
     {
-        $sql = "SELECT * FROM category";
-        $categories = DB::select($sql);
-        return view('admin.category.index', compact('categories'));
+        $search = trim($request->input('search', ''));
+        $perPage = (int) $request->input('per_page', 10);
+        $categories = $this->paginateTable($request, 'category', ['name', 'slug', 'id']);
+
+        return view('admin.category.index', compact('categories', 'search', 'perPage'));
     }
+
     public function store(Request $request)
     {
-        $sql = "INSERT INTO category (name, slug) VALUES (?, ?)";
-
         $slug = $this->to_slug($request->name);
-        $params = [$request->name, $slug];
-        $result = DB::insert($sql, $params);
-        if ($result) {
-            return redirect()->back();
-        } else {
-            return redirect()->back();
-        }
+        DB::insert(
+            'INSERT INTO category (name, slug) VALUES (?, ?)',
+            [$request->name, $slug]
+        );
+        return redirect()->back();
     }
 
-
-    public function to_slug($str)
+    public function update(Request $request)
     {
-        $str = trim(mb_strtolower($str));
-        $str = preg_replace('/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/', 'a', $str);
-        $str = preg_replace('/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/', 'e', $str);
-        $str = preg_replace('/(ì|í|ị|ỉ|ĩ)/', 'i', $str);
-        $str = preg_replace('/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/', 'o', $str);
-        $str = preg_replace('/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/', 'u', $str);
-        $str = preg_replace('/(ỳ|ý|ỵ|ỷ|ỹ)/', 'y', $str);
-        $str = preg_replace('/(đ)/', 'd', $str);
-        $str = preg_replace('/(\[|\])/', '', $str);
-        $str = preg_replace('/([\s]+)/', '-', $str);
-        return $str;
+        $slug = $this->to_slug($request->name);
+        DB::update(
+            'UPDATE category SET name = ?, slug = ? WHERE id = ?',
+            [$request->name, $slug, $request->id]
+        );
+        return redirect()->back();
+    }
+
+    public function destroy($id)
+    {
+        DB::delete('DELETE FROM category WHERE id = ?', [$id]);
+        return redirect()->back();
     }
 }

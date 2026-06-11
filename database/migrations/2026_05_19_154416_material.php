@@ -13,7 +13,13 @@ class Material extends Migration
      */
     public function up()
     {
-        //
+        Schema::create('material', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->integer('status')->default(1);
+            $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
+            $table->timestamp('updated_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
+        });
     }
 
     /**
@@ -23,6 +29,6 @@ class Material extends Migration
      */
     public function down()
     {
-        //
+        Schema::dropIfExists('material');
     }
 }

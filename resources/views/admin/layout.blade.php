@@ -82,6 +82,10 @@
     </div>
     <div class="menu-overlay"></div>
 
+    @yield('sub_layout')
+
+    @include('admin.partials.media-picker')
+
     <!-- jQuery  -->
     <script src="{{ asset("manager/assets/js/jquery.min.js") }}"></script>
     <script src="{{ asset("manager/assets/js/bootstrap.bundle.min.js") }}"></script>
@@ -110,7 +114,8 @@
 
     <!-- App js -->
     <script src="{{ asset("manager/assets/js/theme.js") }}"></script>
-    <!-- @yield('js') -->
+    <script src="{{ asset('manager/assets/js/page/media-picker.js') }}"></script>
+    @yield('js')
 
 </body>
 
