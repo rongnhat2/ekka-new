@@ -248,14 +248,6 @@
                             <div class="ec-footer-widget">
                                 <h4 class="ec-footer-heading mb-2">Tin tức mới</h4>
                                 <ul class="ec-footer-links list-unstyled">
-                                    <li>
-                                        <a href="/news/1">Cập nhật chương trình sale lớn hè 2024!</a>
-                                        <span class="d-block text-muted" style="font-size:12px">10/06/2024</span>
-                                    </li>
-                                    <li class="mt-2">
-                                        <a href="/news/2">Các sản phẩm mới vừa về kho</a>
-                                        <span class="d-block text-muted" style="font-size:12px">05/06/2024</span>
-                                    </li>
                                 </ul>
                                 <form class="mt-3">
                                     <div class="input-group">
@@ -291,8 +283,7 @@
                         <!-- Footer Copyright Start -->
                         <div class="col text-center footer-copy">
                             <div class="footer-bottom-copy ">
-                                <div class="ec-copy">Copyright © 2026 <a class="site-name text-upper"
-                                        href="#">Ekka<span>.</span></a>. All Rights Reserved</div>
+
                             </div>
                         </div>
                         <!-- Footer Copyright End -->
