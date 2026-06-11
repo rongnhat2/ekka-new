@@ -38,7 +38,7 @@
                     <p class="m-b-15"><strong id="product-price"></strong></p>
                     <div class="form-group m-b-15">
                         <label>Số lượng</label>
-                        <input type="number" name="quantity" value="1" min="1" class="form-control" style="max-width:120px">
+                        <input type="number" name="quantity" value="1" min="1" style="max-width:120px">
                     </div>
                     <button type="submit" class="btn btn-primary">Thêm vào giỏ</button>
                 </form>
@@ -62,7 +62,7 @@
 
 @section('js')
 <script>
-    $('#product-var-select').on('change', function () {
+    $('#product-var-select').on('change', function() {
         const opt = $(this).find(':selected');
         const price = opt.data('price');
         $('#product-price').text(price ? Number(price).toLocaleString() + ' đ' : '');

@@ -38,6 +38,8 @@ Route::middleware(['AuthAdmin:auth'])->group(function () {
 Route::middleware(['AuthAdmin:admin'])->group(function () {
     Route::prefix('admin')->group(function () {
         Route::get('/', 'Admin\DisplayController@index')->name('admin.index');
+
+        Route::post('logout', 'Admin\AuthController@logout')->name('admin.logout');
         Route::get('statistic', 'Admin\StatisticController@index')->name('admin.statistic');
 
         Route::prefix('category')->group(function () {

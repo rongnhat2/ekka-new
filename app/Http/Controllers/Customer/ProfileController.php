@@ -25,6 +25,7 @@ class ProfileController extends Controller
                     'ordDate' => $order->ordDate,
                     'total' => $order->totalPrice,
                     'order_status' => $order->staValue,
+                    'created_at' => $order->created_at,
                 ];
             });
 

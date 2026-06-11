@@ -4,7 +4,9 @@
 @section('body')
 
 <div class="sticky-header-next-sec ec-breadcrumb section-space-mb">
-    <div class="container"><h2 class="ec-breadcrumb-title">Giỏ hàng</h2></div>
+    <div class="container">
+        <h2 class="ec-breadcrumb-title">Giỏ hàng</h2>
+    </div>
 </div>
 
 <section class="ec-page-content section-space-p">
@@ -37,7 +39,7 @@
                         </td>
                         <td>{{ number_format($line->price) }} đ</td>
                         <td>
-                            <input type="number" name="quantities[{{ $line->var_id }}]" value="{{ $line->quantity }}" min="1" max="{{ $line->stock }}" class="form-control" style="width:80px">
+                            <input type="number" name="quantities[{{ $line->var_id }}]" value="{{ $line->quantity }}" min="1" max="{{ $line->stock }}" style="width:80px">
                         </td>
                         <td>{{ number_format($line->line_total) }} đ</td>
                         <td>

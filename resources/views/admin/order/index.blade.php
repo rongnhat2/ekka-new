@@ -60,6 +60,9 @@ $paymentBadges = [
                         @if (session('success'))
                         <div class="alert alert-success">{{ session('success') }}</div>
                         @endif
+                        @if (request('updated'))
+                        <div class="alert alert-success">Đã cập nhật trạng thái đơn hàng.</div>
+                        @endif
                         <div class="m-t-25 data-table-wrapper">
                             <table id="data-table" class="table dt-responsive nowrap">
                                 <thead>
@@ -127,6 +130,7 @@ $paymentBadges = [
     window.OrderDetail = {
         dataUrl: "{{ url('admin/order') }}",
         updateUrl: "{{ route('admin.order.update') }}",
+        indexUrl: "{{ route('admin.order.index') }}",
         csrf: "{{ csrf_token() }}"
     };
 </script>

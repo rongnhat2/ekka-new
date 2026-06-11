@@ -124,13 +124,20 @@ class OrderController extends Controller
         ]);
 
         $order = Order::findOrFail($request->data_id);
-        $order->update(['staValue' => (int) $request->data_status]);
+        $newStatus = (int) $request->data_status;
+        $order->update(['staValue' => $newStatus]);
 
-        if ($request->ajax()) {
-            return response()->json(['message' => 200]);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'message' => 'ok',
+                'order_id' => $order->ordID,
+                'status' => $newStatus,
+            ]);
         }
 
-        return redirect()->route('admin.order.index', ['status' => $request->data_status]);
+        return redirect()
+            ->route('admin.order.index', ['status' => $newStatus])
+            ->with('success', 'Đã cập nhật trạng thái đơn hàng #' . $order->ordID);
     }
 
     /**

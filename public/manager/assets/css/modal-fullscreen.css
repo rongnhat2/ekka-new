@@ -27,6 +27,9 @@ body.modal-fs-open{
 	background-color: #fff;
 	border-radius: 10px 10px 0 0;
 	opacity: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 
 	transition: all 300ms ease;
 }
@@ -36,6 +39,7 @@ body.modal-fs-open{
 	align-items: center;
 	justify-content: space-between;
 	height: 70px;
+	flex: 0 0 70px;
 	border-bottom: 1px solid #ccc;
 	padding: 20px;
 }
@@ -47,12 +51,15 @@ body.modal-fs-open{
 }
 .modal-fullscreen .fs-wrapper .fs-content{
 	width: 100%;
-	height: calc(100% - 140px);
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
 }
 .modal-fullscreen .fs-wrapper .fs-content .fs-content-wrapper{
 	width: 100%;
 	height: 100%;
 	padding: 20px;
+	overflow-y: auto;
 }
 
 .modal-fullscreen .fs-wrapper .fs-footer{
@@ -61,8 +68,12 @@ body.modal-fs-open{
 	align-items: center;
 	justify-content: flex-end;
 	height: 70px;
+	flex: 0 0 70px;
 	border-top: 1px solid #ccc;
 	padding: 20px;
+	position: relative;
+	z-index: 5;
+	background-color: #fff;
 }
 
 
