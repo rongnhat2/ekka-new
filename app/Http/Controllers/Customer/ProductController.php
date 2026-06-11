@@ -4,43 +4,54 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Customer\Concerns\LoadsProducts;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use DB;
 
 class ProductController extends Controller
 {
     use LoadsProducts;
 
+    /**
+     * Display products by category.
+     */
     public function category(Request $request)
     {
         $categoryId = (int) $request->query('tag', 0);
         $keyword = trim($request->query('keyword', ''));
         $sort = (int) $request->query('sort', 0);
 
-        $query = DB::table('product')->where('status', 1);
+        $query = Product::active();
 
         if ($categoryId > 0) {
-            $query->where('category_id', $categoryId);
+            $query->where('cateID', $categoryId);
         }
         if ($keyword !== '') {
-            $query->where('name', 'like', '%' . $keyword . '%');
+            $query->where('proName', 'like', '%' . $keyword . '%');
         }
 
-        switch ($sort) {
-            case 2: $query->orderBy('name'); break;
-            case 3: $query->orderByDesc('name'); break;
-            default: $query->orderByDesc('id'); break;
+        if ($sort === 2) {
+            $query->orderBy('proName');
         }
 
         $products = $query->paginate(12)->appends($request->query());
         $this->attachVariantSummary($products->items());
-        $currentCategory = $categoryId > 0
-            ? DB::table('category')->where('id', $categoryId)->first()
-            : null;
+
+        $currentCategory = null;
+        if ($categoryId > 0) {
+            $currentCategory = Category::find($categoryId);
+            if ($currentCategory) {
+                $currentCategory->id = $currentCategory->cateID;
+                $currentCategory->name = $currentCategory->cateName;
+            }
+        }
 
         return view('customer.category', compact('products', 'currentCategory', 'categoryId', 'keyword', 'sort'));
     }
 
+    /**
+     * Display the specified product.
+     */
     public function show($id)
     {
         $product = $this->getProductWithVariants($id);
@@ -49,11 +60,9 @@ class ProductController extends Controller
         }
 
         $related = $this->attachVariantSummary(
-            DB::table('product')
-                ->where('category_id', $product->category_id)
-                ->where('id', '!=', $product->id)
-                ->where('status', 1)
-                ->orderByDesc('id')
+            Product::active()
+                ->where('cateID', $product->cateID)
+                ->where('proID', '!=', $product->proID)
                 ->limit(4)
                 ->get()
         );

@@ -1,9 +1,10 @@
 <tr>
-    <td>{{ $item->product_id }}</td>
+    <td>{{ $item->proID ?? $item->product_id }}</td>
     <td>
         @php
-        $img = $item->images && $item->images !== '[]'
-            ? trim(explode(',', $item->images)[0])
+        $imgSource = $item->IMG ?? $item->images ?? '';
+        $img = $imgSource && $imgSource !== '[]'
+            ? trim(explode(',', $imgSource)[0])
             : '';
         @endphp
         <div class="media align-items-center">
@@ -12,7 +13,7 @@
                 <img src="/{{ $img }}" alt="" style="width:60px;height:60px;object-fit:cover">
             </div>
             @endif
-            <span>{{ $item->name }}</span>
+            <span>{{ $item->proName ?? $item->name }}</span>
         </div>
     </td>
     <td>{{ number_format($item->{$qtyField}) }}</td>

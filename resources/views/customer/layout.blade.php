@@ -45,17 +45,17 @@
                             <!-- Header User Start -->
                             <div class="ec-header-user dropdown ">
                                 @if ($customer_data['is_login'])
-                                    <a title="My Account" href="{{ route('customer.view.profile') }}">
-                                        <i class="far fa-user"></i>{{ $customer_data['name'] }}
-                                    </a>
+                                <a title="My Account" href="{{ route('customer.view.profile') }}">
+                                    <i class="far fa-user"></i>{{ $customer_data['name'] }}
+                                </a>
                                 @else
-                                    <button class="dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="far fa-user"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li><a class="dropdown-item" href="{{ route('customer.view.register') }}">Đăng kí</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('customer.view.login') }}">Đăng nhập</a></li>
-                                    </ul>
+                                <button class="dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="far fa-user"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li><a class="dropdown-item" href="{{ route('customer.view.register') }}">Đăng kí</a></li>
+                                    <li><a class="dropdown-item" href="{{ route('customer.view.login') }}">Đăng nhập</a></li>
+                                </ul>
                                 @endif
                             </div>
                             <a href="{{ route('customer.view.cart') }}" class="ec-header-btn ec-header-wishlist">
@@ -96,15 +96,15 @@
                             <div class="ec-header-bottons">
                                 <div class="ec-header-user dropdown">
                                     @if ($customer_data['is_login'])
-                                        <a title="My Account" href="{{ route('customer.view.profile') }}" class="d-flex align-items-center">
-                                            <i class="far fa-user m-r-10"></i>{{ $customer_data['name'] }}
-                                        </a>
+                                    <a title="My Account" href="{{ route('customer.view.profile') }}" class="d-flex align-items-center">
+                                        <i class="far fa-user m-r-10"></i>{{ $customer_data['name'] }}
+                                    </a>
                                     @else
-                                        <button class="dropdown-toggle" data-bs-toggle="dropdown"><i class="far fa-user"></i></button>
-                                        <ul class="dropdown-menu dropdown-menu-right">
-                                            <li><a class="dropdown-item" href="{{ route('customer.view.register') }}">Đăng kí</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('customer.view.login') }}">Đăng nhập</a></li>
-                                        </ul>
+                                    <button class="dropdown-toggle" data-bs-toggle="dropdown"><i class="far fa-user"></i></button>
+                                    <ul class="dropdown-menu dropdown-menu-right">
+                                        <li><a class="dropdown-item" href="{{ route('customer.view.register') }}">Đăng kí</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('customer.view.login') }}">Đăng nhập</a></li>
+                                    </ul>
                                     @endif
                                 </div>
                                 <a href="{{ route('customer.view.cart') }}" class="ec-header-btn">
@@ -122,7 +122,7 @@
                 <div class="row ">
                     <div class="col">
                         <div class="header-logo">
-                            <a href="/"><img src="{{ asset("customer/assets/images/logo.png") }}" alt="Site Logo" /></a>
+                            EKKA
                         </div>
                     </div>
                     <div class="col">
@@ -291,7 +291,7 @@
                         <!-- Footer Copyright Start -->
                         <div class="col text-center footer-copy">
                             <div class="footer-bottom-copy ">
-                                <div class="ec-copy">Copyright © 2021-2022 <a class="site-name text-upper"
+                                <div class="ec-copy">Copyright © 2026 <a class="site-name text-upper"
                                         href="#">Ekka<span>.</span></a>. All Rights Reserved</div>
                             </div>
                         </div>

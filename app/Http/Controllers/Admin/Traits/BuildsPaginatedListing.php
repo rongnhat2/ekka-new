@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers\Admin\Traits;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use DB;
 
 trait BuildsPaginatedListing
 {
-    protected function paginateTable(
+    /**
+     * Phân trang danh sách bằng ORM Eloquent.
+     *
+     * @param  class-string<Model>  $modelClass
+     */
+    protected function paginateModel(
         Request $request,
-        string $table,
+        string $modelClass,
         array $searchColumns,
-        string $orderBy = 'id DESC'
+        string $orderColumn = 'id',
+        string $direction = 'desc'
     ): LengthAwarePaginator {
         $search = trim($request->input('search', ''));
         $perPage = (int) $request->input('per_page', 10);
@@ -20,30 +26,19 @@ trait BuildsPaginatedListing
             $perPage = 10;
         }
 
-        $where = 'WHERE 1=1';
-        $bindings = [];
+        $query = $modelClass::query();
 
         if ($search !== '') {
-            $conditions = array_map(function ($column) {
-                return "{$column} LIKE ?";
-            }, $searchColumns);
-            $where .= ' AND (' . implode(' OR ', $conditions) . ')';
-            $like = '%' . $search . '%';
-            $bindings = array_fill(0, count($searchColumns), $like);
+            $query->where(function ($builder) use ($searchColumns, $search) {
+                foreach ($searchColumns as $column) {
+                    $builder->orWhere($column, 'like', '%' . $search . '%');
+                }
+            });
         }
 
-        $total = (int) DB::selectOne("SELECT COUNT(*) AS total FROM {$table} {$where}", $bindings)->total;
-        $page = max(1, (int) $request->input('page', 1));
-        $offset = ($page - 1) * $perPage;
-
-        $items = DB::select(
-            "SELECT * FROM {$table} {$where} ORDER BY {$orderBy} LIMIT ? OFFSET ?",
-            array_merge($bindings, [$perPage, $offset])
-        );
-
-        return new LengthAwarePaginator($items, $total, $perPage, $page, [
-            'path' => $request->url(),
-            'query' => $request->query(),
-        ]);
+        return $query
+            ->orderBy($orderColumn, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
     }
 }

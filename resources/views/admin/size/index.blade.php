@@ -29,15 +29,15 @@
                             <tbody>
                                 @foreach ($sizes as $size)
                                 <tr>
-                                    <td>{{ $size->id }}</td>
-                                    <td>{{ $size->name }}</td>
+                                    <td>{{ $size->sizeID }}</td>
+                                    <td>{{ $size->sizeValue }}</td>
                                     <td>
                                         <a href="#" class="btn btn-default btn-sm"
                                             data-action="show-edit-form"
                                             data-module="size"
-                                            data-id="{{ $size->id }}"
-                                            data-name="{{ $size->name }}"><i class="feather-edit"></i></a>
-                                        <form action="{{ route('admin.size.delete', $size->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa size này?')">
+                                            data-id="{{ $size->sizeID }}"
+                                            data-name="{{ $size->sizeValue }}"><i class="feather-edit"></i></a>
+                                        <form action="{{ route('admin.size.delete', $size->sizeID) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa size này?')">
                                             @csrf
                                             <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
                                         </form>

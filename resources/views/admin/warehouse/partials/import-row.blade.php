@@ -3,7 +3,7 @@
         <select class="form-control warehouse-product-select" name="items[{{ $index }}][product_id]" required>
             <option value="">-- Chọn sản phẩm --</option>
             @foreach ($products as $product)
-            <option value="{{ $product->id }}">{{ $product->id }} - {{ $product->name }}</option>
+            <option value="{{ $product->proID }}">{{ $product->proID }} - {{ $product->proName }}</option>
             @endforeach
         </select>
     </div>

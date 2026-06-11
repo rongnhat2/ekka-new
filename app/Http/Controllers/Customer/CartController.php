@@ -4,14 +4,17 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Customer\Concerns\LoadsProducts;
+use App\Models\ProVariant;
 use App\Support\CustomerContext;
 use Illuminate\Http\Request;
-use DB;
 
 class CartController extends Controller
 {
     use LoadsProducts;
 
+    /**
+     * Display the shopping cart.
+     */
     public function index(Request $request)
     {
         $cart = CustomerContext::cart($request);
@@ -21,6 +24,9 @@ class CartController extends Controller
         return view('customer.cart', compact('lines', 'subtotal'));
     }
 
+    /**
+     * Add an item to the cart.
+     */
     public function add(Request $request)
     {
         $request->validate([
@@ -31,7 +37,7 @@ class CartController extends Controller
         $varId = (int) $request->product_var_id;
         $qty = (int) ($request->quantity ?? 1);
 
-        $var = DB::table('product_var')->where('id', $varId)->where('status', 1)->first();
+        $var = ProVariant::active()->find($varId);
         if (!$var) {
             return redirect()->back()->with('error', 'Biến thể không tồn tại');
         }
@@ -43,6 +49,9 @@ class CartController extends Controller
         return redirect()->route('customer.view.cart')->with('success', 'Đã thêm vào giỏ hàng');
     }
 
+    /**
+     * Update cart quantities.
+     */
     public function update(Request $request)
     {
         $quantities = $request->input('quantities', []);
@@ -60,6 +69,9 @@ class CartController extends Controller
         return redirect()->route('customer.view.cart')->with('success', 'Đã cập nhật giỏ hàng');
     }
 
+    /**
+     * Remove an item from the cart.
+     */
     public function remove(Request $request, $varId)
     {
         $cart = CustomerContext::cart($request);

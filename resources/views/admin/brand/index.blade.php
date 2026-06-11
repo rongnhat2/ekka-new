@@ -29,16 +29,16 @@
                             <tbody>
                                 @foreach ($brands as $brand)
                                 <tr>
-                                    <td>{{ $brand->name }}</td>
-                                    <td>{{ $brand->description }}</td>
+                                    <td>{{ $brand->brandName }}</td>
+                                    <td>{{ $brand->brandDesc }}</td>
                                     <td>
                                         <a href="#" class="btn btn-default btn-sm"
                                             data-action="show-edit-form"
                                             data-module="brand"
-                                            data-id="{{ $brand->id }}"
-                                            data-name="{{ $brand->name }}"
-                                            data-description="{{ $brand->description }}"><i class="feather-edit"></i></a>
-                                        <form action="{{ route('admin.brand.delete', $brand->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa thương hiệu này?')">
+                                            data-id="{{ $brand->brandID }}"
+                                            data-name="{{ $brand->brandName }}"
+                                            data-description="{{ $brand->brandDesc }}"><i class="feather-edit"></i></a>
+                                        <form action="{{ route('admin.brand.delete', $brand->brandID) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa thương hiệu này?')">
                                             @csrf
                                             <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
                                         </form>

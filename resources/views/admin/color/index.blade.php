@@ -29,7 +29,7 @@
                             <tbody>
                                 @foreach ($colors as $color)
                                 <tr>
-                                    <td>{{ $color->name }}</td>
+                                    <td>{{ $color->colorValue }}</td>
                                     <td>
                                         <span class="d-inline-block rounded" style="width:20px;height:20px;background:{{ $color->hex }};vertical-align:middle;"></span>
                                         {{ $color->hex }}
@@ -38,10 +38,10 @@
                                         <a href="#" class="btn btn-default btn-sm"
                                             data-action="show-edit-form"
                                             data-module="color"
-                                            data-id="{{ $color->id }}"
-                                            data-name="{{ $color->name }}"
+                                            data-id="{{ $color->colorID }}"
+                                            data-name="{{ $color->colorValue }}"
                                             data-hex="{{ $color->hex }}"><i class="feather-edit"></i></a>
-                                        <form action="{{ route('admin.color.delete', $color->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa màu này?')">
+                                        <form action="{{ route('admin.color.delete', $color->colorID) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa màu này?')">
                                             @csrf
                                             <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
                                         </form>

@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Support\CustomerContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
-use DB;
 
 class AuthController extends Controller
 {
+    /**
+     * Store a newly registered user.
+     */
     public function register(Request $request)
     {
         $request->validate([
@@ -20,29 +23,29 @@ class AuthController extends Controller
             'password' => 'required|string|min:6',
         ]);
 
-        if (DB::table('customer')->where('email', $request->email)->exists()) {
+        if (User::where('userEmail', $request->email)->exists()) {
             return redirect()->back()->withInput()->with('error', 'Email đã tồn tại');
         }
 
-        $secretKey = random_int(1000000, 9999999);
-        $id = DB::table('customer')->insertGetId([
-            'name' => $request->name,
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'address' => $request->address ?? '',
-            'password' => Hash::make($request->password),
-            'secret_key' => $secretKey,
+        $user = User::create([
+            'userName' => $request->name,
+            'userPhone' => $request->phone,
+            'userEmail' => $request->email,
+            'userAddress' => $request->address ?? '',
+            'userPass' => Hash::make($request->password),
+            'secret_key' => random_int(1000000, 9999999),
             'status' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
         ]);
 
         Cookie::queue(Cookie::forget('_token_'));
-        Cookie::queue('_token_', CustomerContext::createToken($id), 60 * 24 * 30);
+        Cookie::queue('_token_', CustomerContext::createToken($user->userID), 60 * 24 * 30);
 
         return redirect()->route('customer.view.profile')->with('success', 'Đăng ký thành công');
     }
 
+    /**
+     * Authenticate the user.
+     */
     public function login(Request $request)
     {
         $request->validate([
@@ -50,21 +53,23 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = DB::table('customer')
-            ->where('email', $request->email)
-            ->whereNotNull('password')
+        $user = User::where('userEmail', $request->email)
+            ->whereNotNull('userPass')
             ->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user || !Hash::check($request->password, $user->userPass)) {
             return redirect()->back()->with('error_login', 'Email hoặc mật khẩu không đúng');
         }
 
         Cookie::queue(Cookie::forget('_token_'));
-        Cookie::queue('_token_', CustomerContext::createToken($user->id), 60 * 24 * 30);
+        Cookie::queue('_token_', CustomerContext::createToken($user->userID), 60 * 24 * 30);
 
         return redirect()->route('customer.view.profile')->with('success', 'Đăng nhập thành công');
     }
 
+    /**
+     * Log the user out.
+     */
     public function logout()
     {
         Cookie::queue(Cookie::forget('_token_'));

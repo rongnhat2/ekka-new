@@ -6,43 +6,37 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrderDetail extends Model
 {
-    protected $table = 'order_detail';
+    protected $table = 'orderDetail';
+
+    protected $primaryKey = 'ordDetailID';
 
     protected $fillable = [
-        'order_id',
-        'product_id',
-        'product_var_id',
-        'product_name',
-        'quantity',
-        'price',
-        'discount',
-        'total_price',
-        'suborder_status',
+        'ordID', 'proID', 'proVarID', 'proName', 'quantity', 'basePrice', 'salePrice', 'discount', 'suborder_status',
     ];
 
     protected $casts = [
-        'order_id' => 'integer',
-        'product_id' => 'integer',
-        'product_var_id' => 'integer',
+        'ordID' => 'integer',
+        'proID' => 'integer',
+        'proVarID' => 'integer',
         'quantity' => 'integer',
-        'price' => 'integer',
+        'basePrice' => 'integer',
+        'salePrice' => 'integer',
         'discount' => 'integer',
-        'total_price' => 'integer',
         'suborder_status' => 'integer',
     ];
 
     public function order()
     {
-        return $this->belongsTo(Order::class, 'order_id');
+        return $this->belongsTo(Order::class, 'ordID', 'ordID');
     }
 
     public function product()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Product::class, 'proID', 'proID');
     }
 
-    public function productVar()
+    public function proVariant()
     {
-        return $this->belongsTo(ProductVar::class, 'product_var_id');
+        return $this->belongsTo(ProVariant::class, 'proVarID', 'proVarID');
     }
 }

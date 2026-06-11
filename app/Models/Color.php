@@ -8,19 +8,15 @@ class Color extends Model
 {
     protected $table = 'color';
 
-    protected $fillable = [
-        'name',
-        'hex',
-        'status',
-    ];
+    protected $primaryKey = 'colorID';
 
-    protected $casts = [
-        'status' => 'integer',
-    ];
+    protected $fillable = ['colorValue', 'hex', 'status'];
 
-    public function productVars()
+    protected $casts = ['status' => 'integer'];
+
+    public function proVariants()
     {
-        return $this->hasMany(ProductVar::class, 'color_id');
+        return $this->hasMany(ProVariant::class, 'colorID', 'colorID');
     }
 
     public function scopeActive($query)

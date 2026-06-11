@@ -3,35 +3,62 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Material;
 use Illuminate\Http\Request;
-use DB;
 
 class MaterialController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $materials = DB::select('SELECT * FROM material ORDER BY id DESC');
+        $materials = Material::all();
+
         return view('admin.material.index', compact('materials'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        DB::insert('INSERT INTO material (name) VALUES (?)', [$request->name]);
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        Material::create([
+            'mateName' => $request->name,
+        ]);
+
         return redirect()->back();
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request)
     {
-        DB::update(
-            'UPDATE material SET name = ? WHERE id = ?',
-            [$request->name, $request->id]
-        );
+        $request->validate([
+            'id' => 'required|integer',
+            'name' => 'required|string|max:255',
+        ]);
+
+        $material = Material::findOrFail($request->id);
+        $material->update([
+            'mateName' => $request->name,
+        ]);
+
         return redirect()->back();
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy($id)
     {
-        DB::delete('DELETE FROM material WHERE id = ?', [$id]);
+        Material::findOrFail($id)->delete();
+
         return redirect()->back();
     }
 }

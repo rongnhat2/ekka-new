@@ -8,19 +8,15 @@ class Brand extends Model
 {
     protected $table = 'brand';
 
-    protected $fillable = [
-        'name',
-        'description',
-        'status',
-    ];
+    protected $primaryKey = 'brandID';
 
-    protected $casts = [
-        'status' => 'integer',
-    ];
+    protected $fillable = ['brandName', 'brandDesc', 'status'];
+
+    protected $casts = ['status' => 'integer'];
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'brand_id');
+        return $this->hasMany(Product::class, 'brandID', 'brandID');
     }
 
     public function scopeActive($query)

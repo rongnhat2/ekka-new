@@ -63,7 +63,7 @@
                             <select class="form-control" name="category_id" required>
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach ($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                <option value="{{ $category->cateID }}">{{ $category->cateName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -72,7 +72,7 @@
                             <select class="form-control" name="brand_id" required>
                                 <option value="">-- Chọn thương hiệu --</option>
                                 @foreach ($brands as $brand)
-                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                <option value="{{ $brand->brandID }}">{{ $brand->brandName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -156,7 +156,7 @@
                             <select class="form-control" name="category_id" required>
                                 <option value="">-- Chọn danh mục --</option>
                                 @foreach ($categories as $category)
-                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                <option value="{{ $category->cateID }}">{{ $category->cateName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -165,7 +165,7 @@
                             <select class="form-control" name="brand_id" required>
                                 <option value="">-- Chọn thương hiệu --</option>
                                 @foreach ($brands as $brand)
-                                <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                                <option value="{{ $brand->brandID }}">{{ $brand->brandName }}</option>
                                 @endforeach
                             </select>
                         </div>

@@ -9,44 +9,40 @@ class OrderSeeder extends Seeder
 {
     public function run()
     {
-        if (DB::table('orders')->exists()) {
+        if (DB::table('order')->exists()) {
             return;
         }
 
         $now = now();
 
         $customers = [
-            ['name' => 'Nguyễn Văn An', 'phone' => '0901234567', 'email' => 'an.nguyen@gmail.com', 'address' => '123 Lê Lợi, Quận 1, TP.HCM'],
-            ['name' => 'Trần Thị Bình', 'phone' => '0912345678', 'email' => 'binh.tran@gmail.com', 'address' => '45 Nguyễn Huệ, Quận 1, TP.HCM'],
-            ['name' => 'Lê Hoàng Cường', 'phone' => '0923456789', 'email' => 'cuong.le@yahoo.com', 'address' => '78 Hai Bà Trưng, Hoàn Kiếm, Hà Nội'],
-            ['name' => 'Phạm Minh Đức', 'phone' => '0934567890', 'email' => 'duc.pham@gmail.com', 'address' => '12 Trần Phú, Hải Châu, Đà Nẵng'],
-            ['name' => 'Hoàng Thị Em', 'phone' => '0945678901', 'email' => 'em.hoang@gmail.com', 'address' => '56 Lê Văn Sỹ, Quận 3, TP.HCM'],
-            ['name' => 'Vũ Quốc Huy', 'phone' => '0956789012', 'email' => 'huy.vu@gmail.com', 'address' => '89 Phan Xích Long, Phú Nhuận, TP.HCM'],
-            ['name' => 'Đỗ Thị Lan', 'phone' => '0967890123', 'email' => 'lan.do@gmail.com', 'address' => '34 Võ Văn Tần, Quận 3, TP.HCM'],
-            ['name' => 'Bùi Văn Nam', 'phone' => '0978901234', 'email' => 'nam.bui@gmail.com', 'address' => '21 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội'],
-            ['name' => 'Ngô Thị Oanh', 'phone' => '0989012345', 'email' => 'oanh.ngo@gmail.com', 'address' => '67 Nguyễn Thị Minh Khai, Quận 1, TP.HCM'],
-            ['name' => 'Dương Văn Phúc', 'phone' => '0990123456', 'email' => 'phuc.duong@gmail.com', 'address' => '90 Cách Mạng Tháng 8, Quận 10, TP.HCM'],
+            ['userName' => 'Nguyễn Văn An', 'userPhone' => '0901234567', 'userEmail' => 'an.nguyen@gmail.com', 'userAddress' => '123 Lê Lợi, Quận 1, TP.HCM'],
+            ['userName' => 'Trần Thị Bình', 'userPhone' => '0912345678', 'userEmail' => 'binh.tran@gmail.com', 'userAddress' => '45 Nguyễn Huệ, Quận 1, TP.HCM'],
+            ['userName' => 'Lê Hoàng Cường', 'userPhone' => '0923456789', 'userEmail' => 'cuong.le@yahoo.com', 'userAddress' => '78 Hai Bà Trưng, Hoàn Kiếm, Hà Nội'],
+            ['userName' => 'Phạm Minh Đức', 'userPhone' => '0934567890', 'userEmail' => 'duc.pham@gmail.com', 'userAddress' => '12 Trần Phú, Hải Châu, Đà Nẵng'],
+            ['userName' => 'Hoàng Thị Em', 'userPhone' => '0945678901', 'userEmail' => 'em.hoang@gmail.com', 'userAddress' => '56 Lê Văn Sỹ, Quận 3, TP.HCM'],
+            ['userName' => 'Vũ Quốc Huy', 'userPhone' => '0956789012', 'userEmail' => 'huy.vu@gmail.com', 'userAddress' => '89 Phan Xích Long, Phú Nhuận, TP.HCM'],
+            ['userName' => 'Đỗ Thị Lan', 'userPhone' => '0967890123', 'userEmail' => 'lan.do@gmail.com', 'userAddress' => '34 Võ Văn Tần, Quận 3, TP.HCM'],
+            ['userName' => 'Bùi Văn Nam', 'userPhone' => '0978901234', 'userEmail' => 'nam.bui@gmail.com', 'userAddress' => '21 Lý Thường Kiệt, Hoàn Kiếm, Hà Nội'],
+            ['userName' => 'Ngô Thị Oanh', 'userPhone' => '0989012345', 'userEmail' => 'oanh.ngo@gmail.com', 'userAddress' => '67 Nguyễn Thị Minh Khai, Quận 1, TP.HCM'],
+            ['userName' => 'Dương Văn Phúc', 'userPhone' => '0990123456', 'userEmail' => 'phuc.duong@gmail.com', 'userAddress' => '90 Cách Mạng Tháng 8, Quận 10, TP.HCM'],
         ];
 
-        $customerIds = [];
+        $userIds = [];
         foreach ($customers as $c) {
-            $customerIds[] = DB::table('customer')->insertGetId([
-                'name' => $c['name'],
-                'phone' => $c['phone'],
-                'email' => $c['email'],
-                'address' => $c['address'],
+            $userIds[] = DB::table('user')->insertGetId(array_merge($c, [
                 'status' => 1,
                 'created_at' => $now,
                 'updated_at' => $now,
-            ]);
+            ]));
         }
 
         $variants = DB::select('
-            SELECT product_var.*, product.name AS product_name
-            FROM product_var
-            INNER JOIN product ON product_var.product_id = product.id
-            WHERE product_var.status = 1
-            ORDER BY product_var.id ASC
+            SELECT ProVariant.*, product.proName AS product_name
+            FROM ProVariant
+            INNER JOIN product ON ProVariant.proID = product.proID
+            WHERE ProVariant.status = 1
+            ORDER BY ProVariant.proVarID ASC
         ');
 
         if (!$variants) {
@@ -58,7 +54,8 @@ class OrderSeeder extends Seeder
         $discounts = [0, 5, 10, 0, 15, 5, 0, 10, 5, 0];
 
         for ($i = 0; $i < 20; $i++) {
-            $customerId = $customerIds[array_rand($customerIds)];
+            $userId = $userIds[array_rand($userIds)];
+            $user = DB::table('user')->where('userID', $userId)->first();
             $discount = $discounts[$i % count($discounts)];
             $orderStatus = $orderStatuses[$i % count($orderStatuses)];
             $paymentStatus = $paymentStatuses[$i % count($paymentStatuses)];
@@ -70,17 +67,18 @@ class OrderSeeder extends Seeder
             for ($j = 0; $j < $itemCount; $j++) {
                 $var = $variants[array_rand($variants)];
                 $qty = random_int(1, 2);
-                $lineTotal = (int) ($var->prices * $qty);
+                $lineTotal = (int) ($var->price * $qty);
                 $subtotal += $lineTotal;
+                $salePrice = (int) ($var->price * (100 - $discount) / 100);
 
                 $lines[] = [
-                    'product_id' => $var->product_id,
-                    'product_var_id' => $var->id,
-                    'product_name' => $var->product_name,
+                    'proID' => $var->proID,
+                    'proVarID' => $var->proVarID,
+                    'proName' => $var->product_name,
                     'quantity' => $qty,
-                    'price' => $var->prices,
+                    'basePrice' => $var->price,
+                    'salePrice' => $salePrice,
                     'discount' => $discount,
-                    'total_price' => (int) ($lineTotal * (100 - $discount) / 100),
                     'suborder_status' => $orderStatus >= 2 ? 1 : 0,
                 ];
             }
@@ -88,21 +86,34 @@ class OrderSeeder extends Seeder
             $total = (int) ($subtotal * (100 - $discount) / 100);
             $createdAt = $now->copy()->subDays(random_int(0, 30))->subHours(random_int(0, 23));
 
-            $orderId = DB::table('orders')->insertGetId([
-                'customer_id' => $customerId,
+            $orderId = DB::table('order')->insertGetId([
+                'userID' => $userId,
+                'ordDate' => $createdAt,
+                'ordPhone' => $user->userPhone,
+                'ordReceiver' => $user->userName,
+                'ordAddress' => $user->userAddress,
+                'totalPrice' => $total,
+                'staValue' => $orderStatus,
                 'subtotal' => $subtotal,
                 'discount' => $discount,
-                'total' => $total,
-                'order_status' => $orderStatus,
-                'payment_status' => $paymentStatus,
                 'order_type' => 0,
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
             ]);
 
+            DB::table('payment')->insert([
+                'ordID' => $orderId,
+                'payDate' => $createdAt,
+                'payStatus' => $paymentStatus,
+                'amount' => $total,
+                'payMethod' => $paymentStatus === 2 ? 'ONLINE' : 'COD',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+
             foreach ($lines as $line) {
-                DB::table('order_detail')->insert(array_merge($line, [
-                    'order_id' => $orderId,
+                DB::table('orderDetail')->insert(array_merge($line, [
+                    'ordID' => $orderId,
                     'created_at' => $createdAt,
                     'updated_at' => $createdAt,
                 ]));

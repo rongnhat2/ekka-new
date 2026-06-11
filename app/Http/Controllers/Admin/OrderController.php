@@ -3,8 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\Payment;
+use App\Models\Product;
+use App\Models\ProVariant;
+use App\Models\User;
 use Illuminate\Http\Request;
-use DB;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
@@ -22,6 +29,9 @@ class OrderController extends Controller
         2 => 'Đã thanh toán',
     ];
 
+    /**
+     * Display a listing of the resource.
+     */
     public function index(Request $request)
     {
         $statusParam = $request->query('status');
@@ -36,21 +46,18 @@ class OrderController extends Controller
                 : 0;
         }
 
-        $query = '
-            SELECT orders.*,
-                customer.name AS username,
-                customer.email,
-                customer.phone AS telephone,
-                customer.address
-            FROM orders
-            INNER JOIN customer ON orders.customer_id = customer.id
-        ';
-
+        $query = Order::with(['user', 'latestPayment']);
         if ($currentStatus !== 'all') {
-            $orders = DB::select($query . ' WHERE orders.order_status = ? ORDER BY orders.id DESC', [$currentStatus]);
-        } else {
-            $orders = DB::select($query . ' ORDER BY orders.id DESC');
+            $query->where('staValue', $currentStatus);
         }
+
+        $orders = $query->get()->each(function (Order $order) {
+            $order->username = $order->user->userName ?? '';
+            $order->email = $order->user->userEmail ?? '';
+            $order->telephone = $order->user->userPhone ?? '';
+            $order->address = $order->user->userAddress ?? '';
+            $order->payment_status = $order->latestPayment->payStatus ?? 0;
+        });
 
         return view('admin.order.index', [
             'orders' => $orders,
@@ -60,68 +67,55 @@ class OrderController extends Controller
         ]);
     }
 
+    /**
+     * Display the specified resource (JSON).
+     */
     public function data($id)
     {
-        $order = DB::selectOne('
-            SELECT orders.*,
-                customer.name AS username,
-                customer.email,
-                customer.phone AS telephone,
-                customer.address
-            FROM orders
-            INNER JOIN customer ON orders.customer_id = customer.id
-            WHERE orders.id = ?
-        ', [$id]);
-
+        $order = Order::with(['user', 'latestPayment'])->find($id);
         if (!$order) {
             return response()->json(['message' => 'Not found'], 404);
         }
 
-        $details = DB::select('
-            SELECT order_detail.*,
-                product_var.stock,
-                color.name AS color_name,
-                size.name AS size_name,
-                material.name AS material_name
-            FROM order_detail
-            INNER JOIN product_var ON order_detail.product_var_id = product_var.id
-            LEFT JOIN color ON product_var.color_id = color.id
-            LEFT JOIN size ON product_var.size_id = size.id
-            LEFT JOIN material ON product_var.material_id = material.id
-            WHERE order_detail.order_id = ?
-            ORDER BY order_detail.id ASC
-        ', [$id]);
+        $details = OrderDetail::with(['proVariant.color', 'proVariant.size', 'proVariant.material'])
+            ->where('ordID', $id)
+            ->orderBy('ordDetailID')
+            ->get();
 
-        $dataSub = array_map(function ($row) {
+        $dataSub = $details->map(function (OrderDetail $row) {
             return [
-                'product_id' => $row->product_id,
-                'name' => $row->product_name,
+                'product_id' => $row->proID,
+                'name' => $row->proName,
                 'quantity' => $row->quantity,
-                'size_name' => $row->size_name,
-                'color_name' => $row->color_name,
-                'material_name' => $row->material_name,
-                'price' => number_format($row->price),
+                'size_name' => $row->proVariant->size->sizeValue ?? null,
+                'color_name' => $row->proVariant->color->colorValue ?? null,
+                'material_name' => $row->proVariant->material->mateName ?? null,
+                'price' => number_format($row->salePrice),
                 'discount' => $row->discount,
-                'total_price' => number_format($row->total_price),
-                'stock' => $row->stock,
+                'total_price' => number_format($row->salePrice * $row->quantity),
+                'stock' => $row->proVariant->stock ?? 0,
                 'suborder_status' => $row->suborder_status,
             ];
-        }, $details);
+        })->all();
 
         return response()->json([
             'data' => [
                 'data_order' => [[
-                    'username' => $order->username,
-                    'address' => $order->address,
-                    'email' => $order->email,
-                    'telephone' => $order->telephone,
-                    'order_status' => $order->order_status,
+                    'username' => $order->user->userName ?? '',
+                    'address' => $order->user->userAddress ?? '',
+                    'email' => $order->user->userEmail ?? '',
+                    'telephone' => $order->user->userPhone ?? '',
+                    'order_status' => $order->staValue,
+                    'payment_status' => $order->latestPayment->payStatus ?? 0,
                 ]],
                 'data_sub' => $dataSub,
             ],
         ]);
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request)
     {
         $request->validate([
@@ -129,10 +123,8 @@ class OrderController extends Controller
             'data_status' => 'required|integer|min:0|max:4',
         ]);
 
-        DB::table('orders')->where('id', $request->data_id)->update([
-            'order_status' => (int) $request->data_status,
-            'updated_at' => now(),
-        ]);
+        $order = Order::findOrFail($request->data_id);
+        $order->update(['staValue' => (int) $request->data_status]);
 
         if ($request->ajax()) {
             return response()->json(['message' => 200]);
@@ -141,13 +133,19 @@ class OrderController extends Controller
         return redirect()->route('admin.order.index', ['status' => $request->data_status]);
     }
 
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
-        $products = DB::select('SELECT id, name FROM product WHERE status = 1 ORDER BY name');
+        $products = Product::active()->orderBy('proName')->get(['proID', 'proName']);
 
         return view('admin.order.create', compact('products'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -162,116 +160,114 @@ class OrderController extends Controller
         $discount = (int) ($request->discount ?? 0);
         $items = $request->input('items', []);
         $now = now();
+        $orderId = null;
 
-        DB::beginTransaction();
         try {
-            $customerId = DB::table('customer')->where('phone', $request->customer_phone)->value('id');
+            DB::transaction(function () use ($request, $discount, $items, $now, &$orderId) {
+                $user = User::where('userPhone', $request->customer_phone)->first();
 
-            if (!$customerId) {
-                $customerId = DB::table('customer')->insertGetId([
-                    'name' => $request->customer_name,
-                    'phone' => $request->customer_phone,
-                    'email' => $request->customer_email ?: ($request->customer_phone . '@offline.local'),
-                    'address' => $request->customer_address ?: 'Mua tại quầy',
-                    'status' => 1,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ]);
-            } else {
-                $customerUpdate = [
-                    'name' => $request->customer_name,
-                    'updated_at' => $now,
-                ];
-                if ($request->customer_email) {
-                    $customerUpdate['email'] = $request->customer_email;
-                }
-                if ($request->customer_address) {
-                    $customerUpdate['address'] = $request->customer_address;
-                }
-                DB::table('customer')->where('id', $customerId)->update($customerUpdate);
-            }
-
-            $subtotal = 0;
-            $lines = [];
-
-            foreach ($items as $item) {
-                if (empty($item['product_var_id']) || empty($item['quantity'])) {
-                    continue;
+                if (!$user) {
+                    $user = User::create([
+                        'userName' => $request->customer_name,
+                        'userPhone' => $request->customer_phone,
+                        'userEmail' => $request->customer_email ?: ($request->customer_phone . '@offline.local'),
+                        'userAddress' => $request->customer_address ?: 'Mua tại quầy',
+                        'userPass' => bcrypt(Str::random(16)),
+                        'secret_key' => random_int(1000000, 9999999),
+                    ]);
+                } else {
+                    $user->update(array_filter([
+                        'userName' => $request->customer_name,
+                        'userEmail' => $request->customer_email ?: $user->userEmail,
+                        'userAddress' => $request->customer_address ?: $user->userAddress,
+                    ]));
                 }
 
-                $var = DB::table('product_var')
-                    ->join('product', 'product.id', '=', 'product_var.product_id')
-                    ->where('product_var.id', $item['product_var_id'])
-                    ->select('product_var.*', 'product.name AS product_name')
-                    ->first();
+                $subtotal = 0;
+                $lines = [];
 
-                if (!$var) {
-                    continue;
+                foreach ($items as $item) {
+                    if (empty($item['product_var_id']) || empty($item['quantity'])) {
+                        continue;
+                    }
+
+                    $variant = ProVariant::with('product')
+                        ->find($item['product_var_id']);
+
+                    if (!$variant) {
+                        continue;
+                    }
+
+                    $qty = (int) $item['quantity'];
+                    if ($qty > $variant->stock) {
+                        throw new \RuntimeException(
+                            'Sản phẩm "' . $variant->product->proName . '" không đủ tồn kho (còn ' . $variant->stock . ')'
+                        );
+                    }
+
+                    $lineTotal = (int) ($variant->price * $qty);
+                    $subtotal += $lineTotal;
+
+                    $lines[] = [
+                        'proID' => $variant->proID,
+                        'proVarID' => $variant->proVarID,
+                        'proName' => $variant->product->proName,
+                        'quantity' => $qty,
+                        'salePrice' => $variant->price,
+                        'discount' => $discount,
+                        'suborder_status' => 1,
+                        'stock_var_id' => $variant->proVarID,
+                        'stock_qty' => $qty,
+                    ];
                 }
 
-                $qty = (int) $item['quantity'];
-                if ($qty > $var->stock) {
-                    throw new \RuntimeException('Sản phẩm "' . $var->product_name . '" không đủ tồn kho (còn ' . $var->stock . ')');
+                if (!$lines) {
+                    throw new \RuntimeException('Vui lòng chọn ít nhất một sản phẩm hợp lệ');
                 }
 
-                $lineTotal = (int) ($var->prices * $qty);
-                $subtotal += $lineTotal;
+                $total = (int) ($subtotal * (100 - $discount) / 100);
 
-                $lines[] = [
-                    'product_id' => $var->product_id,
-                    'product_var_id' => $var->id,
-                    'product_name' => $var->product_name,
-                    'quantity' => $qty,
-                    'price' => $var->prices,
+                $order = Order::create([
+                    'userID' => $user->userID,
+                    'ordDate' => $now,
+                    'ordPhone' => $request->customer_phone,
+                    'ordReceiver' => $request->customer_name,
+                    'ordAddress' => $request->customer_address ?: 'Mua tại quầy',
+                    'subtotal' => $subtotal,
                     'discount' => $discount,
-                    'total_price' => (int) ($lineTotal * (100 - $discount) / 100),
-                    'suborder_status' => 1,
-                    'stock_var_id' => $var->id,
-                    'stock_qty' => $qty,
-                ];
-            }
-
-            if (!$lines) {
-                throw new \RuntimeException('Vui lòng chọn ít nhất một sản phẩm hợp lệ');
-            }
-
-            $total = (int) ($subtotal * (100 - $discount) / 100);
-
-            $orderId = DB::table('orders')->insertGetId([
-                'customer_id' => $customerId,
-                'subtotal' => $subtotal,
-                'discount' => $discount,
-                'total' => $total,
-                'order_status' => 3,
-                'payment_status' => 2,
-                'order_type' => 1,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-
-            foreach ($lines as $line) {
-                DB::table('order_detail')->insert([
-                    'order_id' => $orderId,
-                    'product_id' => $line['product_id'],
-                    'product_var_id' => $line['product_var_id'],
-                    'product_name' => $line['product_name'],
-                    'quantity' => $line['quantity'],
-                    'price' => $line['price'],
-                    'discount' => $line['discount'],
-                    'total_price' => $line['total_price'],
-                    'suborder_status' => $line['suborder_status'],
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'totalPrice' => $total,
+                    'staValue' => 3,
+                    'order_type' => 1,
                 ]);
 
-                DB::table('product_var')
-                    ->where('id', $line['stock_var_id'])
-                    ->decrement('stock', $line['stock_qty']);
-            }
+                $orderId = $order->ordID;
 
-            DB::commit();
+                foreach ($lines as $line) {
+                    OrderDetail::create([
+                        'ordID' => $orderId,
+                        'proID' => $line['proID'],
+                        'proVarID' => $line['proVarID'],
+                        'proName' => $line['proName'],
+                        'quantity' => $line['quantity'],
+                        'basePrice' => $line['salePrice'],
+                        'salePrice' => (int) ($line['salePrice'] * (100 - $discount) / 100),
+                        'discount' => $line['discount'],
+                        'suborder_status' => $line['suborder_status'],
+                    ]);
+
+                    ProVariant::where('proVarID', $line['stock_var_id'])
+                        ->decrement('stock', $line['stock_qty']);
+                }
+
+                Payment::create([
+                    'ordID' => $orderId,
+                    'payDate' => $now,
+                    'payStatus' => 2,
+                    'amount' => $total,
+                    'payMethod' => 'OFFLINE',
+                ]);
+            });
         } catch (\Exception $e) {
-            DB::rollBack();
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
 

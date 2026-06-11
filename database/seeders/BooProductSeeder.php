@@ -31,10 +31,10 @@ class BooProductSeeder extends Seeder
 
         $now = now();
         $brandId = $this->ensureBooBrand($now);
-        $categoryId = DB::table('category')->where('slug', 'ao-thun')->value('id') ?: 1;
-        $colorId = DB::table('color')->where('name', 'Trắng')->value('id') ?: 1;
-        $sizeId = DB::table('size')->where('name', 'M')->value('id') ?: 1;
-        $materialId = DB::table('material')->where('name', 'Cotton 100%')->value('id') ?: 1;
+        $categoryId = DB::table('categories')->where('slug', 'ao-thun')->value('cateID') ?: 1;
+        $colorId = DB::table('color')->where('colorValue', 'Trắng')->value('colorID') ?: 1;
+        $sizeId = DB::table('size')->where('sizeValue', 'M')->value('sizeID') ?: 1;
+        $materialId = DB::table('material')->where('mateName', 'Cotton 100%')->value('mateID') ?: 1;
 
         $uploadDir = public_path('uploads/media');
         if (!is_dir($uploadDir)) {
@@ -45,7 +45,7 @@ class BooProductSeeder extends Seeder
 
         foreach ($products as $item) {
             $sku = $item['sku'] ?? null;
-            if ($sku && DB::table('product_var')->where('codeSKU', $sku)->exists()) {
+            if ($sku && DB::table('ProVariant')->where('codeSKU', $sku)->exists()) {
                 continue;
             }
 
@@ -70,26 +70,26 @@ class BooProductSeeder extends Seeder
             }
 
             $productId = DB::table('product')->insertGetId([
-                'category_id' => $categoryId,
-                'brand_id' => $brandId,
-                'name' => $name,
+                'cateID' => $categoryId,
+                'brandID' => $brandId,
+                'proName' => $name,
                 'slug' => $slug,
-                'images' => $imagesValue,
+                'IMG' => $imagesValue,
                 'banner' => $banner,
-                'description' => $description,
+                'proDesc' => $description,
                 'detail' => $detail,
                 'status' => 1,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
 
-            DB::table('product_var')->insert([
-                'product_id' => $productId,
-                'color_id' => $colorId,
-                'size_id' => $sizeId,
-                'material_id' => $materialId,
+            DB::table('ProVariant')->insert([
+                'proID' => $productId,
+                'colorID' => $colorId,
+                'sizeID' => $sizeId,
+                'mateID' => $materialId,
                 'codeSKU' => $sku ?: ('BOO-' . $productId),
-                'prices' => $price,
+                'price' => $price,
                 'stock' => 0,
                 'minQuantity' => 1,
                 'status' => 1,
@@ -101,14 +101,14 @@ class BooProductSeeder extends Seeder
 
     private function ensureBooBrand($now): int
     {
-        $existing = DB::table('brand')->where('name', 'BOO')->value('id');
+        $existing = DB::table('brand')->where('brandName', 'BOO')->value('brandID');
         if ($existing) {
             return (int) $existing;
         }
 
         return (int) DB::table('brand')->insertGetId([
-            'name' => 'BOO',
-            'description' => 'Thương hiệu thời trang BOO / BOOLAAB',
+            'brandName' => 'BOO',
+            'brandDesc' => 'Thương hiệu thời trang BOO / BOOLAAB',
             'status' => 1,
             'created_at' => $now,
             'updated_at' => $now,

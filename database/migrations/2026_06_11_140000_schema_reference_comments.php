@@ -4,25 +4,22 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * Documents canonical table/column names in DB metadata.
- * See config/schema.php for the authoritative schema map used by application code.
- */
 class SchemaReferenceComments extends Migration
 {
     private $tableComments = [
-        'category' => 'Danh mục sản phẩm (NOT categories)',
+        'categories' => 'Danh mục sản phẩm',
         'brand' => 'Thương hiệu',
         'product' => 'Sản phẩm cha (SPU)',
-        'product_var' => 'Biến thể SKU (NOT ProVariant). prices=giá bán, stock=tồn kho',
-        'color' => 'Màu sắc (name, hex)',
-        'size' => 'Kích cỡ (name)',
-        'material' => 'Chất liệu (name)',
-        'warehouse_import' => 'Phiếu nhập kho (NOT stock_import)',
-        'warehouse_import_detail' => 'Chi tiết nhập kho. price=giá nhập',
-        'customer' => 'Khách hàng (NOT user)',
-        'orders' => 'Đơn hàng (NOT order)',
-        'order_detail' => 'Chi tiết đơn (NOT orderDetail). price=giá tại thời điểm đặt',
+        'ProVariant' => 'Biến thể SKU',
+        'color' => 'Màu sắc',
+        'size' => 'Kích cỡ',
+        'material' => 'Chất liệu',
+        'stock_import' => 'Phiếu nhập kho',
+        'stock_import_detail' => 'Chi tiết nhập kho',
+        'user' => 'Khách hàng',
+        'order' => 'Đơn hàng',
+        'orderDetail' => 'Chi tiết đơn hàng',
+        'payment' => 'Thanh toán',
         'admin' => 'Tài khoản quản trị',
         'media' => 'Thư viện file/media',
     ];
@@ -34,7 +31,7 @@ class SchemaReferenceComments extends Migration
         }
 
         foreach ($this->tableComments as $table => $comment) {
-            if ($this->tableExists($table)) {
+            if (Schema::hasTable($table)) {
                 DB::statement("ALTER TABLE `{$table}` COMMENT = " . DB::getPdo()->quote($comment));
             }
         }
@@ -47,14 +44,9 @@ class SchemaReferenceComments extends Migration
         }
 
         foreach (array_keys($this->tableComments) as $table) {
-            if ($this->tableExists($table)) {
+            if (Schema::hasTable($table)) {
                 DB::statement("ALTER TABLE `{$table}` COMMENT = ''");
             }
         }
-    }
-
-    private function tableExists(string $table): bool
-    {
-        return Schema::hasTable($table);
     }
 }

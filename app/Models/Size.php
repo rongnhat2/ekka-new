@@ -8,18 +8,15 @@ class Size extends Model
 {
     protected $table = 'size';
 
-    protected $fillable = [
-        'name',
-        'status',
-    ];
+    protected $primaryKey = 'sizeID';
 
-    protected $casts = [
-        'status' => 'integer',
-    ];
+    protected $fillable = ['sizeValue', 'status'];
 
-    public function productVars()
+    protected $casts = ['status' => 'integer'];
+
+    public function proVariants()
     {
-        return $this->hasMany(ProductVar::class, 'size_id');
+        return $this->hasMany(ProVariant::class, 'sizeID', 'sizeID');
     }
 
     public function scopeActive($query)

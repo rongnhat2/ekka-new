@@ -3,38 +3,66 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use Illuminate\Http\Request;
-use DB;
 
 class BrandController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $brands = DB::select('SELECT * FROM brand ORDER BY id DESC');
+        $brands = Brand::all();
+
         return view('admin.brand.index', compact('brands'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        DB::insert(
-            'INSERT INTO brand (name, description) VALUES (?, ?)',
-            [$request->name, $request->description ?? '']
-        );
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        Brand::create([
+            'brandName' => $request->name,
+            'brandDesc' => $request->description ?? '',
+        ]);
+
         return redirect()->back();
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request)
     {
-        DB::update(
-            'UPDATE brand SET name = ?, description = ? WHERE id = ?',
-            [$request->name, $request->description ?? '', $request->id]
-        );
+        $request->validate([
+            'id' => 'required|integer',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+        ]);
+
+        $brand = Brand::findOrFail($request->id);
+        $brand->update([
+            'brandName' => $request->name,
+            'brandDesc' => $request->description ?? '',
+        ]);
+
         return redirect()->back();
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy($id)
     {
-        DB::delete('DELETE FROM brand WHERE id = ?', [$id]);
+        Brand::findOrFail($id)->delete();
+
         return redirect()->back();
     }
 }

@@ -6,29 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 class Admin extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('admin', function (Blueprint $table) {
-            $table->increments('id');
-            $table->Integer('secret_key');
-            $table->string('email');
-            $table->string('password');
+            $table->increments('adminID');
+            $table->string('adminName')->default('');
+            $table->string('adminPhone')->default('');
+            $table->string('adminAddress')->default('');
+            $table->string('adminEmail');
+            $table->string('adminPass');
+            $table->integer('secret_key')->nullable();
             $table->integer('status')->default(1);
             $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('admin');

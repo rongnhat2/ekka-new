@@ -11,26 +11,27 @@ class Admin extends Authenticatable
 
     protected $table = 'admin';
 
+    protected $primaryKey = 'adminID';
+
     protected $fillable = [
-        'secret_key',
-        'email',
-        'password',
-        'status',
+        'adminName', 'adminPhone', 'adminAddress', 'adminEmail', 'adminPass', 'secret_key', 'status',
     ];
 
-    protected $hidden = [
-        'password',
-        'secret_key',
-    ];
+    protected $hidden = ['adminPass', 'secret_key'];
 
     protected $casts = [
         'secret_key' => 'integer',
         'status' => 'integer',
     ];
 
-    public function warehouseImports()
+    public function getAuthPassword()
     {
-        return $this->hasMany(WarehouseImport::class, 'admin_id');
+        return $this->adminPass;
+    }
+
+    public function stockImports()
+    {
+        return $this->hasMany(StockImport::class, 'adminID', 'adminID');
     }
 
     public function scopeActive($query)

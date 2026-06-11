@@ -8,19 +8,22 @@ class WarehouseImport extends Migration
 {
     public function up()
     {
-        Schema::create('warehouse_import', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('admin_id');
+        Schema::create('stock_import', function (Blueprint $table) {
+            $table->increments('importID');
+            $table->integer('adminID');
+            $table->timestamp('improtDate')->default(\DB::raw('CURRENT_TIMESTAMP'));
+            $table->integer('totalQuantity')->default(0);
+            $table->text('note')->nullable();
             $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
         });
 
-        Schema::create('warehouse_import_detail', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('import_id');
-            $table->integer('product_var_id');
-            $table->integer('quantity');
-            $table->integer('price');
+        Schema::create('stock_import_detail', function (Blueprint $table) {
+            $table->increments('importDetailID');
+            $table->integer('importID');
+            $table->integer('proVarID');
+            $table->integer('Quantity');
+            $table->integer('unitPrice')->default(0);
             $table->timestamp('created_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('updated_at')->default(\DB::raw('CURRENT_TIMESTAMP'));
         });
@@ -28,7 +31,7 @@ class WarehouseImport extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('warehouse_import_detail');
-        Schema::dropIfExists('warehouse_import');
+        Schema::dropIfExists('stock_import_detail');
+        Schema::dropIfExists('stock_import');
     }
 }

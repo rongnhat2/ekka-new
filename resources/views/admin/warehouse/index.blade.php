@@ -32,10 +32,10 @@
                             <tbody>
                                 @forelse ($stockItems as $item)
                                 <tr>
-                                    <td><div class="id-order">{{ $item->product_id }}</div></td>
-                                    <td>{{ $item->name }}</td>
+                                    <td><div class="id-order">{{ $item->product_id ?? $item->proID }}</div></td>
+                                    <td>{{ $item->name ?? $item->proName }}</td>
                                     <td>{{ number_format($item->quantity) }}</td>
-                                    <td>{{ number_format($item->prices) }} đ</td>
+                                    <td>{{ number_format($item->prices ?? $item->price) }} đ</td>
                                 </tr>
                                 @empty
                                 <tr>

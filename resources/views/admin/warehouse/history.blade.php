@@ -32,12 +32,12 @@
                             <tbody>
                                 @forelse ($imports as $import)
                                 <tr>
-                                    <td><div class="id-order">{{ $import->id }}</div></td>
-                                    <td>{{ $import->email ?? 'N/A' }}</td>
+                                    <td><div class="id-order">{{ $import->importID }}</div></td>
+                                    <td>{{ $import->adminEmail ?? 'N/A' }}</td>
                                     <td>{{ number_format($import->total_price) }} đ</td>
-                                    <td>{{ $import->created_at }}</td>
+                                    <td>{{ $import->improtDate ?? $import->created_at }}</td>
                                     <td>
-                                        <a href="{{ route('admin.warehouse.show', $import->id) }}" class="btn btn-default btn-sm" title="Xem chi tiết">
+                                        <a href="{{ route('admin.warehouse.show', $import->importID) }}" class="btn btn-default btn-sm" title="Xem chi tiết">
                                             <i class="feather-eye"></i>
                                         </a>
                                     </td>

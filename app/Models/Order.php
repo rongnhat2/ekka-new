@@ -18,46 +18,48 @@ class Order extends Model
     public const TYPE_ONLINE = 0;
     public const TYPE_OFFLINE = 1;
 
-    protected $table = 'orders';
+    protected $table = 'order';
+
+    protected $primaryKey = 'ordID';
 
     protected $fillable = [
-        'customer_id',
-        'subtotal',
-        'discount',
-        'total',
-        'order_status',
-        'payment_status',
-        'order_type',
+        'userID', 'ordDate', 'ordPhone', 'ordReceiver', 'ordAddress',
+        'totalPrice', 'staValue', 'subtotal', 'discount', 'order_type',
     ];
 
     protected $casts = [
-        'customer_id' => 'integer',
+        'userID' => 'integer',
+        'totalPrice' => 'integer',
+        'staValue' => 'integer',
         'subtotal' => 'integer',
         'discount' => 'integer',
-        'total' => 'integer',
-        'order_status' => 'integer',
-        'payment_status' => 'integer',
         'order_type' => 'integer',
+        'ordDate' => 'datetime',
     ];
 
-    public function customer()
+    public function user()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(User::class, 'userID', 'userID');
     }
 
     public function orderDetails()
     {
-        return $this->hasMany(OrderDetail::class, 'order_id');
+        return $this->hasMany(OrderDetail::class, 'ordID', 'ordID');
     }
 
-    public function scopeStatus($query, int $status)
+    public function payments()
     {
-        return $query->where('order_status', $status);
+        return $this->hasMany(Payment::class, 'ordID', 'ordID');
+    }
+
+    public function latestPayment()
+    {
+        return $this->hasOne(Payment::class, 'ordID', 'ordID')->latestOfMany('payID');
     }
 
     public function scopeDelivered($query)
     {
-        return $query->where('order_status', self::STATUS_DELIVERED);
+        return $query->where('staValue', self::STATUS_DELIVERED);
     }
 
     public static function statusLabels(): array
@@ -68,15 +70,6 @@ class Order extends Model
             self::STATUS_COMPLETED => 'Đã hoàn thiện',
             self::STATUS_DELIVERED => 'Đã giao hàng',
             self::STATUS_RETURNED => 'Hoàn trả',
-        ];
-    }
-
-    public static function paymentLabels(): array
-    {
-        return [
-            0 => '',
-            self::PAYMENT_UNPAID => 'Chưa thanh toán',
-            self::PAYMENT_PAID => 'Đã thanh toán',
         ];
     }
 }

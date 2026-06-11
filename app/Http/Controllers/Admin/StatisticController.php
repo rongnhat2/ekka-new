@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\Product;
+use App\Models\ProVariant;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class StatisticController extends Controller
 {
@@ -16,71 +20,66 @@ class StatisticController extends Controller
         $year = max(2020, min(2100, $year));
         $month = max(1, min(12, $month));
 
-        $delivered = 'order_status = 3';
+        $deliveredStatus = Order::STATUS_DELIVERED;
 
         $summary = [
-            'turnover' => (int) (DB::selectOne("SELECT COALESCE(SUM(total), 0) AS total FROM orders WHERE {$delivered}")->total ?? 0),
-            'items_sold' => (int) (DB::selectOne("
-                SELECT COALESCE(SUM(order_detail.quantity), 0) AS total
-                FROM order_detail
-                INNER JOIN orders ON orders.id = order_detail.order_id
-                WHERE orders.{$delivered}
-            ")->total ?? 0),
-            'order_count' => (int) (DB::selectOne("SELECT COUNT(*) AS total FROM orders WHERE {$delivered}")->total ?? 0),
-            'customer_count' => (int) (DB::selectOne("SELECT COUNT(DISTINCT customer_id) AS total FROM orders WHERE {$delivered}")->total ?? 0),
+            'turnover' => (int) Order::where('staValue', $deliveredStatus)->sum('totalPrice'),
+            'items_sold' => (int) OrderDetail::whereHas('order', function ($q) use ($deliveredStatus) {
+                $q->where('staValue', $deliveredStatus);
+            })->sum('quantity'),
+            'order_count' => Order::where('staValue', $deliveredStatus)->count(),
+            'customer_count' => (int) Order::where('staValue', $deliveredStatus)->distinct('userID')->count('userID'),
         ];
 
-        $bestSellers = DB::select("
-            SELECT order_detail.product_id,
-                product.name,
-                product.images,
-                SUM(order_detail.quantity) AS sold,
-                (
-                    SELECT COALESCE(SUM(pv.stock), 0)
-                    FROM product_var pv
-                    WHERE pv.product_id = order_detail.product_id
-                ) AS stock
-            FROM order_detail
-            INNER JOIN orders ON orders.id = order_detail.order_id
-            INNER JOIN product ON product.id = order_detail.product_id
-            WHERE orders.{$delivered}
-            GROUP BY order_detail.product_id, product.name, product.images
-            ORDER BY sold DESC
-            LIMIT 5
-        ");
+        $bestSellers = OrderDetail::query()
+            ->select([
+                'orderDetail.proID',
+                'product.proName',
+                'product.IMG',
+                DB::raw('SUM(orderDetail.quantity) AS sold'),
+            ])
+            ->join('order', 'order.ordID', '=', 'orderDetail.ordID')
+            ->join('product', 'product.proID', '=', 'orderDetail.proID')
+            ->where('order.staValue', $deliveredStatus)
+            ->groupBy('orderDetail.proID', 'product.proName', 'product.IMG')
+            ->limit(5)
+            ->get()
+            ->each(function ($row) {
+                $row->stock = (int) ProVariant::where('proID', $row->proID)->sum('stock');
+            });
 
-        $worstSellers = DB::select("
-            SELECT order_detail.product_id,
-                product.name,
-                product.images,
-                SUM(order_detail.quantity) AS sold,
-                (
-                    SELECT COALESCE(SUM(pv.stock), 0)
-                    FROM product_var pv
-                    WHERE pv.product_id = order_detail.product_id
-                ) AS stock
-            FROM order_detail
-            INNER JOIN orders ON orders.id = order_detail.order_id
-            INNER JOIN product ON product.id = order_detail.product_id
-            WHERE orders.{$delivered}
-            GROUP BY order_detail.product_id, product.name, product.images
-            ORDER BY sold ASC
-            LIMIT 5
-        ");
+        $worstSellers = OrderDetail::query()
+            ->select([
+                'orderDetail.proID',
+                'product.proName',
+                'product.IMG',
+                DB::raw('SUM(orderDetail.quantity) AS sold'),
+            ])
+            ->join('order', 'order.ordID', '=', 'orderDetail.ordID')
+            ->join('product', 'product.proID', '=', 'orderDetail.proID')
+            ->where('order.staValue', $deliveredStatus)
+            ->groupBy('orderDetail.proID', 'product.proName', 'product.IMG')
+            ->orderBy('sold')
+            ->limit(5)
+            ->get()
+            ->each(function ($row) {
+                $row->stock = (int) ProVariant::where('proID', $row->proID)->sum('stock');
+            });
 
-        $lowStock = DB::select("
-            SELECT product.id AS product_id,
-                product.name,
-                product.images,
-                COALESCE(SUM(product_var.stock), 0) AS stock,
-                COALESCE(MIN(product_var.minQuantity), 0) AS min_quantity
-            FROM product
-            INNER JOIN product_var ON product_var.product_id = product.id
-            GROUP BY product.id, product.name, product.images
-            HAVING stock <= min_quantity OR stock <= 10
-            ORDER BY stock ASC
-            LIMIT 10
-        ");
+        $lowStock = Product::query()
+            ->select([
+                'product.proID AS product_id',
+                'product.proName AS name',
+                'product.IMG AS images',
+                DB::raw('COALESCE(SUM(ProVariant.stock), 0) AS stock'),
+                DB::raw('COALESCE(MIN(ProVariant.minQuantity), 0) AS min_quantity'),
+            ])
+            ->join('ProVariant', 'ProVariant.proID', '=', 'product.proID')
+            ->groupBy('product.proID', 'product.proName', 'product.IMG')
+            ->havingRaw('stock <= min_quantity OR stock <= 10')
+            ->orderBy('stock')
+            ->limit(10)
+            ->get();
 
         $revenueByDay = $this->fillDailyRevenue($year, $month);
         $revenueByMonth = $this->fillMonthlyRevenue($year);
@@ -100,21 +99,17 @@ class StatisticController extends Controller
     private function fillDailyRevenue(int $year, int $month): array
     {
         $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
-        $rows = DB::select('
-            SELECT DAY(created_at) AS day, COALESCE(SUM(total), 0) AS revenue
-            FROM orders
-            WHERE order_status = 3 AND YEAR(created_at) = ? AND MONTH(created_at) = ?
-            GROUP BY DAY(created_at)
-        ', [$year, $month]);
-
-        $map = [];
-        foreach ($rows as $row) {
-            $map[(int) $row->day] = (int) $row->revenue;
-        }
+        $rows = Order::query()
+            ->selectRaw('DAY(ordDate) AS day, COALESCE(SUM(totalPrice), 0) AS revenue')
+            ->where('staValue', Order::STATUS_DELIVERED)
+            ->whereYear('ordDate', $year)
+            ->whereMonth('ordDate', $month)
+            ->groupBy(DB::raw('DAY(ordDate)'))
+            ->pluck('revenue', 'day');
 
         $result = [];
         for ($d = 1; $d <= $daysInMonth; $d++) {
-            $result[] = ['label' => (string) $d, 'value' => $map[$d] ?? 0];
+            $result[] = ['label' => (string) $d, 'value' => (int) ($rows[$d] ?? 0)];
         }
 
         return $result;
@@ -122,22 +117,17 @@ class StatisticController extends Controller
 
     private function fillMonthlyRevenue(int $year): array
     {
-        $rows = DB::select('
-            SELECT MONTH(created_at) AS month, COALESCE(SUM(total), 0) AS revenue
-            FROM orders
-            WHERE order_status = 3 AND YEAR(created_at) = ?
-            GROUP BY MONTH(created_at)
-        ', [$year]);
-
-        $map = [];
-        foreach ($rows as $row) {
-            $map[(int) $row->month] = (int) $row->revenue;
-        }
+        $rows = Order::query()
+            ->selectRaw('MONTH(ordDate) AS month, COALESCE(SUM(totalPrice), 0) AS revenue')
+            ->where('staValue', Order::STATUS_DELIVERED)
+            ->whereYear('ordDate', $year)
+            ->groupBy(DB::raw('MONTH(ordDate)'))
+            ->pluck('revenue', 'month');
 
         $labels = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
         $result = [];
         for ($m = 1; $m <= 12; $m++) {
-            $result[] = ['label' => $labels[$m - 1], 'value' => $map[$m] ?? 0];
+            $result[] = ['label' => $labels[$m - 1], 'value' => (int) ($rows[$m] ?? 0)];
         }
 
         return $result;

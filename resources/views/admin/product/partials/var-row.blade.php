@@ -1,10 +1,10 @@
 <tr class="product-var-row">
     <td>
-        <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant->id ?? '' }}" class="var-id">
+        <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant->proVarID ?? '' }}" class="var-id">
         <select class="form-control form-control-sm" name="variants[{{ $index }}][color_id]" required>
             <option value="">Màu</option>
             @foreach ($colors as $color)
-            <option value="{{ $color->id }}">{{ $color->name }}</option>
+            <option value="{{ $color->colorID }}">{{ $color->colorValue }}</option>
             @endforeach
         </select>
     </td>
@@ -12,7 +12,7 @@
         <select class="form-control form-control-sm" name="variants[{{ $index }}][size_id]" required>
             <option value="">Size</option>
             @foreach ($sizes as $size)
-            <option value="{{ $size->id }}">{{ $size->name }}</option>
+            <option value="{{ $size->sizeID }}">{{ $size->sizeValue }}</option>
             @endforeach
         </select>
     </td>
@@ -20,7 +20,7 @@
         <select class="form-control form-control-sm" name="variants[{{ $index }}][material_id]" required>
             <option value="">Chất liệu</option>
             @foreach ($materials as $material)
-            <option value="{{ $material->id }}">{{ $material->name }}</option>
+            <option value="{{ $material->mateID }}">{{ $material->mateName }}</option>
             @endforeach
         </select>
     </td>
@@ -28,7 +28,7 @@
         <input type="text" class="form-control form-control-sm" name="variants[{{ $index }}][codeSKU]" value="{{ $variant->codeSKU ?? '' }}" placeholder="SKU" required>
     </td>
     <td>
-        <input type="number" class="form-control form-control-sm" name="variants[{{ $index }}][prices]" value="{{ $variant->prices ?? '' }}" min="0" placeholder="Giá" required>
+        <input type="number" class="form-control form-control-sm" name="variants[{{ $index }}][prices]" value="{{ $variant->price ?? '' }}" min="0" placeholder="Giá" required>
     </td>
     <td>
         <input type="number" class="form-control form-control-sm" name="variants[{{ $index }}][minQuantity]" value="{{ $variant->minQuantity ?? 1 }}" min="1" required>

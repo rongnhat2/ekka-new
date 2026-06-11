@@ -29,15 +29,15 @@
                             <tbody>
                                 @foreach ($materials as $material)
                                 <tr>
-                                    <td>{{ $material->id }}</td>
-                                    <td>{{ $material->name }}</td>
+                                    <td>{{ $material->mateID }}</td>
+                                    <td>{{ $material->mateName }}</td>
                                     <td>
                                         <a href="#" class="btn btn-default btn-sm"
                                             data-action="show-edit-form"
                                             data-module="material"
-                                            data-id="{{ $material->id }}"
-                                            data-name="{{ $material->name }}"><i class="feather-edit"></i></a>
-                                        <form action="{{ route('admin.material.delete', $material->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa chất liệu này?')">
+                                            data-id="{{ $material->mateID }}"
+                                            data-name="{{ $material->mateName }}"><i class="feather-edit"></i></a>
+                                        <form action="{{ route('admin.material.delete', $material->mateID) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa chất liệu này?')">
                                             @csrf
                                             <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
                                         </form>

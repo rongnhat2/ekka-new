@@ -3,30 +3,34 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Color;
+use App\Models\Material;
+use App\Models\Product;
+use App\Models\ProVariant;
+use App\Models\Size;
 use Illuminate\Http\Request;
-use DB;
 
 class ProductVarController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $productVars = DB::select('
-            SELECT product_var.*,
-                product.name AS product_name,
-                color.name AS color_name,
-                size.name AS size_name,
-                material.name AS material_name
-            FROM product_var
-            LEFT JOIN product ON product_var.product_id = product.id
-            LEFT JOIN color ON product_var.color_id = color.id
-            LEFT JOIN size ON product_var.size_id = size.id
-            LEFT JOIN material ON product_var.material_id = material.id
-            ORDER BY product_var.id DESC
-        ');
-        $products = DB::select('SELECT id, name FROM product WHERE status = 1 ORDER BY name');
-        $colors = DB::select('SELECT id, name FROM color WHERE status = 1 ORDER BY name');
-        $sizes = DB::select('SELECT id, name FROM size WHERE status = 1 ORDER BY name');
-        $materials = DB::select('SELECT id, name FROM material WHERE status = 1 ORDER BY name');
+        $productVars = ProVariant::with(['product', 'color', 'size', 'material'])
+            ->get()
+            ->each(function (ProVariant $var) {
+                $var->product_name = $var->product->proName ?? null;
+                $var->color_name = $var->color->colorValue ?? null;
+                $var->size_name = $var->size->sizeValue ?? null;
+                $var->material_name = $var->material->mateName ?? null;
+            });
+
+        $products = Product::active()->orderBy('proName')->get(['proID', 'proName']);
+        $colors = Color::orderBy('colorValue')->get(['colorID', 'colorValue']);
+        $sizes = Size::orderBy('sizeValue')->get(['sizeID', 'sizeValue']);
+        $materials = Material::orderBy('mateName')->get(['mateID', 'mateName']);
+
         return view('admin.product_var.index', compact(
             'productVars',
             'products',
@@ -36,50 +40,75 @@ class ProductVarController extends Controller
         ));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request)
     {
-        DB::insert(
-            'INSERT INTO product_var (product_id, color_id, size_id, material_id, codeSKU, prices, stock, minQuantity)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [
-                $request->product_id,
-                $request->color_id,
-                $request->size_id,
-                $request->material_id,
-                $request->codeSKU,
-                $request->prices,
-                $request->stock,
-                $request->minQuantity,
-            ]
-        );
+        $request->validate([
+            'product_id' => 'required|integer',
+            'color_id' => 'required|integer',
+            'size_id' => 'required|integer',
+            'material_id' => 'required|integer',
+            'codeSKU' => 'nullable|string|max:100',
+            'prices' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'minQuantity' => 'required|integer|min:1',
+        ]);
+
+        ProVariant::create([
+            'proID' => $request->product_id,
+            'colorID' => $request->color_id,
+            'sizeID' => $request->size_id,
+            'mateID' => $request->material_id,
+            'codeSKU' => $request->codeSKU ?? '',
+            'price' => $request->prices,
+            'stock' => $request->stock,
+            'minQuantity' => $request->minQuantity,
+        ]);
+
         return redirect()->back();
     }
 
+    /**
+     * Update the specified resource in storage.
+     */
     public function update(Request $request)
     {
-        DB::update(
-            'UPDATE product_var
-             SET product_id = ?, color_id = ?, size_id = ?, material_id = ?,
-                 codeSKU = ?, prices = ?, stock = ?, minQuantity = ?
-             WHERE id = ?',
-            [
-                $request->product_id,
-                $request->color_id,
-                $request->size_id,
-                $request->material_id,
-                $request->codeSKU,
-                $request->prices,
-                $request->stock,
-                $request->minQuantity,
-                $request->id,
-            ]
-        );
+        $request->validate([
+            'id' => 'required|integer',
+            'product_id' => 'required|integer',
+            'color_id' => 'required|integer',
+            'size_id' => 'required|integer',
+            'material_id' => 'required|integer',
+            'codeSKU' => 'nullable|string|max:100',
+            'prices' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'minQuantity' => 'required|integer|min:1',
+        ]);
+
+        $variant = ProVariant::findOrFail($request->id);
+        $variant->update([
+            'proID' => $request->product_id,
+            'colorID' => $request->color_id,
+            'sizeID' => $request->size_id,
+            'mateID' => $request->material_id,
+            'codeSKU' => $request->codeSKU ?? '',
+            'price' => $request->prices,
+            'stock' => $request->stock,
+            'minQuantity' => $request->minQuantity,
+        ]);
+
         return redirect()->back();
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
     public function destroy($id)
     {
-        DB::delete('DELETE FROM product_var WHERE id = ?', [$id]);
+        ProVariant::findOrFail($id)->delete();
+
         return redirect()->back();
     }
 }

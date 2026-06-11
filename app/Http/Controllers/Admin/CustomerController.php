@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use DB;
+use App\Models\User;
 
 class CustomerController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     */
     public function index()
     {
-        $customers = DB::select('SELECT * FROM customer ORDER BY id DESC');
+        $customers = User::all();
 
         return view('admin.customer.index', compact('customers'));
     }

@@ -30,15 +30,15 @@
                             <tbody>
                                 @forelse ($categories as $category)
                                 <tr>
-                                    <td>{{ $category->id }}</td>
-                                    <td>{{ $category->name }}</td>
+                                    <td>{{ $category->cateID }}</td>
+                                    <td>{{ $category->cateName }}</td>
                                     <td>
                                         <a href="#" class="btn btn-default btn-sm"
                                             data-action="show-edit-form"
                                             data-module="category"
-                                            data-id="{{ $category->id }}"
-                                            data-name="{{ $category->name }}"><i class="feather-edit"></i></a>
-                                        <form action="{{ route('admin.category.delete', $category->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa danh mục này?')">
+                                            data-id="{{ $category->cateID }}"
+                                            data-name="{{ $category->cateName }}"><i class="feather-edit"></i></a>
+                                        <form action="{{ route('admin.category.delete', $category->cateID) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa danh mục này?')">
                                             @csrf
                                             <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
                                         </form>

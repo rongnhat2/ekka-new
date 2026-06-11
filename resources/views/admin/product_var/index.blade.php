@@ -39,22 +39,22 @@
                                     <td>{{ $var->size_name }}</td>
                                     <td>{{ $var->material_name }}</td>
                                     <td>{{ $var->codeSKU }}</td>
-                                    <td>{{ number_format($var->prices) }}</td>
+                                    <td>{{ number_format($var->price) }}</td>
                                     <td>{{ $var->stock }}</td>
                                     <td>
                                         <a href="#" class="btn btn-default btn-sm"
                                            data-action="show-edit-form"
                                            data-module="product-var"
-                                           data-id="{{ $var->id }}"
-                                           data-product-id="{{ $var->product_id }}"
-                                           data-color-id="{{ $var->color_id }}"
-                                           data-size-id="{{ $var->size_id }}"
-                                           data-material-id="{{ $var->material_id }}"
+                                           data-id="{{ $var->proVarID }}"
+                                           data-product-id="{{ $var->proID }}"
+                                           data-color-id="{{ $var->colorID }}"
+                                           data-size-id="{{ $var->sizeID }}"
+                                           data-material-id="{{ $var->mateID }}"
                                            data-codeSKU="{{ $var->codeSKU }}"
-                                           data-prices="{{ $var->prices }}"
+                                           data-prices="{{ $var->price }}"
                                            data-stock="{{ $var->stock }}"
                                            data-minQuantity="{{ $var->minQuantity }}"><i class="feather-edit"></i></a>
-                                        <form action="{{ route('admin.product_var.delete', $var->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa biến thể này?')">
+                                        <form action="{{ route('admin.product_var.delete', $var->proVarID) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa biến thể này?')">
                                             @csrf
                                             <button type="submit" class="btn btn-default btn-sm"><i class="feather-trash"></i></button>
                                         </form>
@@ -81,7 +81,7 @@
                         <select class="form-control" name="product_id" required>
                             <option value="">-- Chọn sản phẩm --</option>
                             @foreach ($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                            <option value="{{ $product->proID }}">{{ $product->proName }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -91,7 +91,7 @@
                             <select class="form-control" name="color_id" required>
                                 <option value="">-- Chọn màu --</option>
                                 @foreach ($colors as $color)
-                                <option value="{{ $color->id }}">{{ $color->name }}</option>
+                                <option value="{{ $color->colorID }}">{{ $color->colorValue }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -100,7 +100,7 @@
                             <select class="form-control" name="size_id" required>
                                 <option value="">-- Chọn size --</option>
                                 @foreach ($sizes as $size)
-                                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                                <option value="{{ $size->sizeID }}">{{ $size->sizeValue }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -109,7 +109,7 @@
                             <select class="form-control" name="material_id" required>
                                 <option value="">-- Chọn chất liệu --</option>
                                 @foreach ($materials as $material)
-                                <option value="{{ $material->id }}">{{ $material->name }}</option>
+                                <option value="{{ $material->mateID }}">{{ $material->mateName }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -156,7 +156,7 @@
                         <select class="form-control" name="product_id" required>
                             <option value="">-- Chọn sản phẩm --</option>
                             @foreach ($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                            <option value="{{ $product->proID }}">{{ $product->proName }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -166,7 +166,7 @@
                             <select class="form-control" name="color_id" required>
                                 <option value="">-- Chọn màu --</option>
                                 @foreach ($colors as $color)
-                                <option value="{{ $color->id }}">{{ $color->name }}</option>
+                                <option value="{{ $color->colorID }}">{{ $color->colorValue }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -175,7 +175,7 @@
                             <select class="form-control" name="size_id" required>
                                 <option value="">-- Chọn size --</option>
                                 @foreach ($sizes as $size)
-                                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                                <option value="{{ $size->sizeID }}">{{ $size->sizeValue }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -184,7 +184,7 @@
                             <select class="form-control" name="material_id" required>
                                 <option value="">-- Chọn chất liệu --</option>
                                 @foreach ($materials as $material)
-                                <option value="{{ $material->id }}">{{ $material->name }}</option>
+                                <option value="{{ $material->mateID }}">{{ $material->mateName }}</option>
                                 @endforeach
                             </select>
                         </div>

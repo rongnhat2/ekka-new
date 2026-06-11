@@ -2,8 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class CustomerContext
@@ -29,21 +29,21 @@ class CustomerContext
             return $guest;
         }
 
-        $user = DB::table('customer')->where('id', (int) $parts[0])->first();
-        if (!$user || !$user->secret_key || !$user->password) {
+        $user = User::find((int) $parts[0]);
+        if (!$user || !$user->secret_key || !$user->userPass) {
             return $guest;
         }
 
-        if (!Hash::check($user->id . '$' . $user->secret_key, $parts[1])) {
+        if (!Hash::check($user->userID . '$' . $user->secret_key, $parts[1])) {
             return $guest;
         }
 
         return [
-            'id' => $user->id,
-            'email' => $user->email,
-            'name' => $user->name,
-            'phone' => $user->phone,
-            'address' => $user->address,
+            'id' => $user->userID,
+            'email' => $user->userEmail,
+            'name' => $user->userName,
+            'phone' => $user->userPhone,
+            'address' => $user->userAddress,
             'is_login' => true,
         ];
     }
@@ -58,9 +58,10 @@ class CustomerContext
         return array_sum(self::cart($request));
     }
 
-    public static function createToken(int $customerId): string
+    public static function createToken(int $userId): string
     {
-        $user = DB::table('customer')->where('id', $customerId)->first();
-        return $customerId . '$' . Hash::make($customerId . '$' . $user->secret_key);
+        $user = User::findOrFail($userId);
+
+        return $userId . '$' . Hash::make($userId . '$' . $user->secret_key);
     }
 }

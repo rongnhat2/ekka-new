@@ -6,21 +6,16 @@ use Illuminate\Support\Facades\Schema;
 
 class ProductVar extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
-        Schema::create('product_var', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('product_id');
-            $table->integer('color_id');
-            $table->integer('size_id');
-            $table->integer('material_id');
+        Schema::create('ProVariant', function (Blueprint $table) {
+            $table->increments('proVarID');
+            $table->integer('proID');
+            $table->integer('colorID');
+            $table->integer('sizeID');
+            $table->integer('mateID');
             $table->string('codeSKU');
-            $table->integer('prices');
+            $table->integer('price');
             $table->integer('stock');
             $table->integer('minQuantity');
             $table->integer('status')->default(1);
@@ -29,13 +24,8 @@ class ProductVar extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
-        Schema::dropIfExists('product_var');
+        Schema::dropIfExists('ProVariant');
     }
 }

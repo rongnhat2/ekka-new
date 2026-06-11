@@ -4,52 +4,75 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Customer\Concerns\LoadsProducts;
+use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use DB;
 
 class DisplayController extends Controller
 {
     use LoadsProducts;
 
+    /**
+     * Display the storefront home page.
+     */
     public function index()
     {
-        $categories = DB::table('category')->where('status', 1)->orderBy('name')->get();
+        $categories = Category::active()
+            ->orderBy('cateName')
+            ->get()
+            ->each(function (Category $category) {
+                $category->id = $category->cateID;
+                $category->name = $category->cateName;
+            });
+
         $activeCategory = $categories->first();
 
         $categoryProducts = [];
         if ($activeCategory) {
             $categoryProducts = $this->attachVariantSummary(
-                DB::table('product')
-                    ->where('category_id', $activeCategory->id)
-                    ->where('status', 1)
-                    ->orderByDesc('id')
+                Product::active()
+                    ->where('cateID', $activeCategory->cateID)
                     ->limit(8)
                     ->get()
             );
         }
 
         $newProducts = $this->attachVariantSummary(
-            DB::table('product')->where('status', 1)->orderByDesc('id')->limit(8)->get()
+            Product::active()
+                ->limit(8)
+                ->get()
         );
 
         return view('customer.index', compact('categories', 'activeCategory', 'categoryProducts', 'newProducts'));
     }
 
+    /**
+     * Show the login form.
+     */
     public function login()
     {
         return view('customer.auth');
     }
 
+    /**
+     * Show the registration form.
+     */
     public function register()
     {
         return view('customer.register');
     }
 
+    /**
+     * Show the forgot password form.
+     */
     public function forgot()
     {
         return view('customer.forgot');
     }
 
+    /**
+     * Show the reset password form.
+     */
     public function reset(Request $request)
     {
         return view('customer.reset', [

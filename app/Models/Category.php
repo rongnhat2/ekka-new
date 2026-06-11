@@ -6,21 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $table = 'category';
+    protected $table = 'categories';
 
-    protected $fillable = [
-        'name',
-        'slug',
-        'status',
-    ];
+    protected $primaryKey = 'cateID';
 
-    protected $casts = [
-        'status' => 'integer',
-    ];
+    protected $fillable = ['cateName', 'slug', 'status'];
+
+    protected $casts = ['status' => 'integer'];
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'category_id');
+        return $this->hasMany(Product::class, 'cateID', 'cateID');
     }
 
     public function scopeActive($query)

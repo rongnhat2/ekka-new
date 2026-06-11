@@ -8,18 +8,15 @@ class Material extends Model
 {
     protected $table = 'material';
 
-    protected $fillable = [
-        'name',
-        'status',
-    ];
+    protected $primaryKey = 'mateID';
 
-    protected $casts = [
-        'status' => 'integer',
-    ];
+    protected $fillable = ['mateName', 'status'];
 
-    public function productVars()
+    protected $casts = ['status' => 'integer'];
+
+    public function proVariants()
     {
-        return $this->hasMany(ProductVar::class, 'material_id');
+        return $this->hasMany(ProVariant::class, 'mateID', 'mateID');
     }
 
     public function scopeActive($query)

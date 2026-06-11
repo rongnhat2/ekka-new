@@ -4,14 +4,22 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Customer\Concerns\LoadsProducts;
+use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\Payment;
+use App\Models\ProVariant;
+use App\Models\User;
 use App\Support\CustomerContext;
 use Illuminate\Http\Request;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class CheckoutController extends Controller
 {
     use LoadsProducts;
 
+    /**
+     * Display the checkout form.
+     */
     public function index(Request $request)
     {
         $cart = CustomerContext::cart($request);
@@ -26,6 +34,9 @@ class CheckoutController extends Controller
         return view('customer.checkout', compact('lines', 'subtotal', 'user'));
     }
 
+    /**
+     * Store a newly created order.
+     */
     public function store(Request $request)
     {
         $user = CustomerContext::user($request);
@@ -48,56 +59,62 @@ class CheckoutController extends Controller
 
         $subtotal = array_sum(array_column($lines, 'line_total'));
         $now = now();
+        $orderId = null;
 
-        DB::beginTransaction();
         try {
-            DB::table('customer')->where('id', $user['id'])->update([
-                'name' => $request->name,
-                'phone' => $request->phone,
-                'email' => $request->email,
-                'address' => $request->address,
-                'updated_at' => $now,
-            ]);
-
-            $orderId = DB::table('orders')->insertGetId([
-                'customer_id' => $user['id'],
-                'subtotal' => $subtotal,
-                'discount' => 0,
-                'total' => $subtotal,
-                'order_status' => 0,
-                'payment_status' => $request->payment_method == 2 ? 2 : 1,
-                'order_type' => 0,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ]);
-
-            foreach ($lines as $line) {
-                if ($line->quantity > $line->stock) {
-                    throw new \RuntimeException('Sản phẩm "' . $line->name . '" không đủ tồn kho');
-                }
-
-                DB::table('order_detail')->insert([
-                    'order_id' => $orderId,
-                    'product_id' => $line->product_id,
-                    'product_var_id' => $line->var_id,
-                    'product_name' => $line->name,
-                    'quantity' => $line->quantity,
-                    'price' => $line->price,
-                    'discount' => 0,
-                    'total_price' => $line->line_total,
-                    'suborder_status' => 0,
-                    'created_at' => $now,
-                    'updated_at' => $now,
+            DB::transaction(function () use ($request, $user, $lines, $subtotal, $now, &$orderId) {
+                User::findOrFail($user['id'])->update([
+                    'userName' => $request->name,
+                    'userPhone' => $request->phone,
+                    'userEmail' => $request->email,
+                    'userAddress' => $request->address,
                 ]);
 
-                DB::table('product_var')
-                    ->where('id', $line->var_id)
-                    ->decrement('stock', $line->quantity);
-            }
+                $order = Order::create([
+                    'userID' => $user['id'],
+                    'ordDate' => $now,
+                    'ordPhone' => $request->phone,
+                    'ordReceiver' => $request->name,
+                    'ordAddress' => $request->address,
+                    'totalPrice' => $subtotal,
+                    'staValue' => 0,
+                    'subtotal' => $subtotal,
+                    'discount' => 0,
+                    'order_type' => Order::TYPE_ONLINE,
+                ]);
 
-            DB::commit();
+                Payment::create([
+                    'ordID' => $order->ordID,
+                    'payDate' => $now,
+                    'payStatus' => $request->payment_method == 2 ? Payment::STATUS_PAID : Payment::STATUS_UNPAID,
+                    'amount' => $subtotal,
+                    'payMethod' => $request->payment_method == 2 ? 'ONLINE' : 'COD',
+                ]);
+
+                foreach ($lines as $line) {
+                    if ($line->quantity > $line->stock) {
+                        throw new \RuntimeException('Sản phẩm "' . $line->name . '" không đủ tồn kho');
+                    }
+
+                    OrderDetail::create([
+                        'ordID' => $order->ordID,
+                        'proID' => $line->product_id,
+                        'proVarID' => $line->var_id,
+                        'proName' => $line->name,
+                        'quantity' => $line->quantity,
+                        'basePrice' => $line->base_price,
+                        'salePrice' => $line->sale_price,
+                        'discount' => 0,
+                        'suborder_status' => 0,
+                    ]);
+
+                    ProVariant::where('proVarID', $line->var_id)
+                        ->decrement('stock', $line->quantity);
+                }
+
+                $orderId = $order->ordID;
+            });
         } catch (\Exception $e) {
-            DB::rollBack();
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
 

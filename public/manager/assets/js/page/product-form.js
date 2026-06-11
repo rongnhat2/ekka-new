@@ -69,13 +69,13 @@
                 const p = res.data.product;
                 const vars = res.data.variants;
 
-                $form.find('[name="id"]').val(p.id);
-                $form.find('[name="name"]').val(p.name);
-                $form.find('[name="category_id"]').val(p.category_id);
-                $form.find('[name="brand_id"]').val(p.brand_id);
-                $form.find('[name="description"]').val(p.description || "");
+                $form.find('[name="id"]').val(p.proID);
+                $form.find('[name="name"]').val(p.proName);
+                $form.find('[name="category_id"]').val(p.cateID);
+                $form.find('[name="brand_id"]').val(p.brandID);
+                $form.find('[name="description"]').val(p.proDesc || "");
                 $form.find('[name="detail"]').val(p.detail || "");
-                $form.find('[name="images"]').val(p.images === "[]" ? "" : p.images);
+                $form.find('[name="images"]').val(p.IMG === "[]" ? "" : p.IMG);
                 $form.find('[name="banner"]').val(p.banner || "");
                 $form.find('[name="status"]').val(p.status);
                 refreshMediaFields($form);
@@ -86,12 +86,12 @@
                         const row = rowTemplate.replace(/__INDEX__/g, i);
                         $editTbody.append(row);
                         const $row = $editTbody.find(".product-var-row").last();
-                        $row.find(".var-id").val(v.id);
-                        $row.find('[name$="[color_id]"]').val(v.color_id);
-                        $row.find('[name$="[size_id]"]').val(v.size_id);
-                        $row.find('[name$="[material_id]"]').val(v.material_id);
+                        $row.find(".var-id").val(v.proVarID);
+                        $row.find('[name$="[color_id]"]').val(v.colorID);
+                        $row.find('[name$="[size_id]"]').val(v.sizeID);
+                        $row.find('[name$="[material_id]"]').val(v.mateID);
                         $row.find('[name$="[codeSKU]"]').val(v.codeSKU);
-                        $row.find('[name$="[prices]"]').val(v.prices);
+                        $row.find('[name$="[prices]"]').val(v.price);
                         $row.find('[name$="[minQuantity]"]').val(v.minQuantity);
                     });
                 } else {

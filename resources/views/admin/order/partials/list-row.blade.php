@@ -1,5 +1,5 @@
 <tr>
-    <td><div class="id-order">{{ $order->id }}</div></td>
+    <td><div class="id-order">{{ $order->ordID }}</div></td>
     <td>
         @if (!empty($order->order_type))
         <span class="badge badge-info badge-pill m-b-5">Offline</span>
@@ -19,13 +19,13 @@
         </div>
         <div class="d-flex align-items-center">
             <div class="badge badge-success badge-dot m-r-10"></div>
-            <div>Thực tính: {{ number_format($order->total) }} đ</div>
+            <div>Thực tính: {{ number_format($order->totalPrice) }} đ</div>
         </div>
     </td>
-    <td>{{ $order->created_at }}</td>
+    <td>{{ $order->ordDate }}</td>
     <td>
-        <div class="badge {{ $statusBadges[$order->order_status] ?? 'badge-secondary' }} badge-pill m-b-5">
-            {{ $statusLabels[$order->order_status] ?? 'N/A' }}
+        <div class="badge {{ $statusBadges[$order->staValue] ?? 'badge-secondary' }} badge-pill m-b-5">
+            {{ $statusLabels[$order->staValue] ?? 'N/A' }}
         </div>
         @if ($order->payment_status > 0)
         <div class="badge {{ $paymentBadges[$order->payment_status] ?? '' }} badge-pill">
@@ -34,7 +34,7 @@
         @endif
     </td>
     <td>
-        <span class="view-data modal-fs-control" style="cursor:pointer" data-id="{{ $order->id }}" title="Xem chi tiết">
+        <span class="view-data modal-fs-control" style="cursor:pointer" data-id="{{ $order->ordID }}" title="Xem chi tiết">
             <i class="feather-eye"></i>
         </span>
     </td>

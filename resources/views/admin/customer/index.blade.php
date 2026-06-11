@@ -32,11 +32,11 @@
                             <tbody>
                                 @forelse ($customers as $customer)
                                 <tr>
-                                    <td><div class="id-order">{{ $customer->id }}</div></td>
-                                    <td>{{ $customer->name }}</td>
-                                    <td>{{ $customer->phone }}</td>
-                                    <td>{{ $customer->email }}</td>
-                                    <td>{{ $customer->address }}</td>
+                                    <td><div class="id-order">{{ $customer->userID }}</div></td>
+                                    <td>{{ $customer->userName }}</td>
+                                    <td>{{ $customer->userPhone }}</td>
+                                    <td>{{ $customer->userEmail }}</td>
+                                    <td>{{ $customer->userAddress }}</td>
                                 </tr>
                                 @empty
                                 <tr>
