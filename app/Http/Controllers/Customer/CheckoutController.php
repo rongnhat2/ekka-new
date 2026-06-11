@@ -89,6 +89,10 @@ class CheckoutController extends Controller
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
+
+                DB::table('product_var')
+                    ->where('id', $line->var_id)
+                    ->decrement('stock', $line->quantity);
             }
 
             DB::commit();

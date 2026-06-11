@@ -95,6 +95,7 @@ class OrderSeeder extends Seeder
                 'total' => $total,
                 'order_status' => $orderStatus,
                 'payment_status' => $paymentStatus,
+                'order_type' => 0,
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt,
             ]);
