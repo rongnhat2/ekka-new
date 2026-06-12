@@ -43,16 +43,20 @@ class MediaController extends Controller
             mkdir($dir, 0755, true);
         }
 
+        $originalName = $file->getClientOriginalName();
+        $mimeType = $file->getClientMimeType();
+        $size = $file->getSize();
+
         $extension = strtolower($file->getClientOriginalExtension() ?: 'jpg');
         $filename = time() . '_' . uniqid() . '.' . $extension;
         $file->move($dir, $filename);
         $path = 'uploads/media/' . $filename;
 
         $item = Media::create([
-            'name' => $file->getClientOriginalName(),
+            'name' => $originalName,
             'path' => $path,
-            'mime_type' => $file->getClientMimeType(),
-            'size' => $file->getSize(),
+            'mime_type' => $mimeType,
+            'size' => $size ?: filesize($dir . DIRECTORY_SEPARATOR . $filename),
         ]);
 
         if ($request->ajax()) {
